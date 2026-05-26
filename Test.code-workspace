@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "path": "src",
+      "name": "📁 src (MicroPython)"
+    }
+  ],
+  "settings": {
+    "micropythonStudio.project": true,
+    "micropythonStudio.targetMCU": "esp32c3",
+    "micropythonStudio.language": "Micropython"
+  }
+}

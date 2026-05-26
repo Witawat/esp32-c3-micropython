@@ -1,0 +1,24 @@
+{
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Linux",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "venvPath": "..",
+  "venv": ".venv",
+  "stubPath": "d:/MyCode/python/esp32-c3/.venv/Lib/site-packages",
+  "extraPaths": [
+    "d:/MyCode/python/esp32-c3/.venv/Lib/site-packages",
+    "d:/MyCode/python/esp32-c3/src/lib"
+  ],
+  "exclude": [
+    "**/__pycache__"
+  ],
+  "reportMissingModuleSource": "none",
+  "reportMissingImports": "warning",
+  "reportAttributeAccessIssue": "warning",
+  "reportCallIssue": "warning",
+  "reportIndexIssue": "warning",
+  "reportOperatorIssue": "warning",
+  "reportReturnType": "warning",
+  "reportArgumentType": "warning"
+}
