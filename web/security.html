@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="รักษาความปลอดภัยอุปกรณ์ — เก็บ secret แบบเข้ารหัส, token auth, ล็อก REPL, audit log">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link active" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🔐 Security</span><span>/</span><span>Security</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>security</code> มี <strong>5 โมดูล</strong> ที่ทำงานร่วมกันเป็นระบบรักษาความปลอดภัยของอุปกรณ์:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>คลาส</th><th>หน้าที่</th></tr></thead><tbody><tr><td><code>secret_store.py</code></td><td><code>SecretStore</code></td><td>เก็บ credential (WiFi pass, API key) แบบเข้ารหัสใน flash</td></tr><tr><td><code>auth_provider.py</code></td><td><code>AuthProvider</code></td><td>สร้าง/ตรวจสอบ token (SHA-256) + rate limiting</td></tr><tr><td><code>repl_lock.py</code></td><td><code>REPLLock</code></td><td>ปิดช่องทางเข้า REPL ทุกช่อง (UART0/WebREPL/TCP/BLE/UART1)</td></tr><tr><td><code>audit_logger.py</code></td><td><code>AuditLogger</code></td><td>บันทึกคำสั่ง REPL + ตรวจจับ suspicious command</td></tr><tr><td><code>security_manager.py</code></td><td><code>SecurityManager</code></td><td><strong>ตัวรวมทั้งหมด</strong> — เรียก <code>lockdown()</code> ครั้งเดียวจบ</td></tr></tbody></table></div>
+<p><strong>แนวคิด:</strong> ใช้ใน production เพื่อ (1) ไม่ให้ขโมย code ผ่าน REPL, (2) ไม่ให้ credential รั่วออกจาก flash แม้แฟลชหลุด, (3) มีหลักฐานย้อนหลังว่าใครทำอะไร</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+from security import SecurityManager
+
+sec = SecurityManager()
+sec.lockdown()          # ล็อคทุกอย่าง — production ready</code></pre></div>
+<hr>
+<h2>SecretStore — เก็บ secret แบบเข้ารหัส</h2>
+<p><code>SecretStore(secret_file='secrets.dat', master_key=None, pbkdf2_iterations=10000)</code> — ข้อมูลถูกเข้ารหัสด้วย <strong>PBKDF2-derived key</strong> แล้วเข้ารหัส <strong>AES-CBC</strong> (ถ้ามี <code>ucryptolib</code>) หรือ XOR fallback (ถ้าไม่มี)</p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>store(key, value)</code></td><td>เก็บ secret (เข้ารหัสก่อนเขียน)</td><td>—</td></tr><tr><td><code>get(key)</code></td><td>อ่าน secret (ถอดรหัสกลับเป็น plaintext)</td><td><code>str</code> หรือ <code>None</code></td></tr><tr><td><code>delete(key)</code></td><td>ลบ secret</td><td>—</td></tr><tr><td><code>list_keys()</code></td><td>รายชื่อ secret (ไม่เปิดเผยค่า)</td><td><code>list</code></td></tr><tr><td><code>lock()</code></td><td><strong>ล็อค</strong> — ล้าง cache ใน RAM, อ่าน/เขียนไม่ได้ (กันการขโมยตอนเครื่องถูกยึด)</td><td>—</td></tr><tr><td><code>unlock(master_key=None)</code></td><td>ปลดล็อค (ต้อง key เดิมถึงจะถอดรหัสถูก)</td><td>—</td></tr><tr><td><code>wipe_all()</code></td><td>ล้างทุกอย่าง: secrets + ไฟล์ + salt (ตอนเครื่องถูก compromise สมบูรณ์)</td><td>—</td></tr><tr><td><code>is_locked</code> (property) / <code>secret_count</code></td><td>ตรวจสถานะ / จำนวน secret</td><td><code>bool</code> / <code>int</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from security.secret_store import SecretStore
+
+store = SecretStore(master_key=b&#x27;device-key&#x27;)
+store.store(&#x27;wifi_password&#x27;, &#x27;my-secret-pass&#x27;)
+print(store.get(&#x27;wifi_password&#x27;))   # my-secret-pass
+store.lock()                        # ไม่สามารถอ่านได้อีก — ล้างจาก RAM</code></pre></div>
+<p><strong>หมายเหตุ:</strong> <code>master_key</code> ควรเป็นค่าที่เฉพาะเครื่อง (default = <code>machine.unique_id()</code>)</p>
+<h2>AuthProvider — token-based authentication</h2>
+<p><code>AuthProvider(secret=None, token_expiry_sec=600, max_attempts=5, lockout_sec=300)</code> — token เป็น SHA-256 hex 64 ตัวอักษร, หมดอายุได้, ผิด 5 ครั้ง → ล็อก 5 นาที</p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>generate_token(salt=None)</code></td><td>สร้าง token ใหม่ (บันทึก expiry ให้)</td><td><code>str</code> 64 hex</td></tr><tr><td><code>authenticate(token)</code></td><td>ตรวจสอบ token (ถูกต้อง + ยังไม่หมดอายุ)</td><td><code>bool</code></td></tr><tr><td><code>invalidate(token)</code> / <code>invalidate_all()</code></td><td>ยกเลิก token ตัวเดียว / ทั้งหมด</td><td>—</td></tr><tr><td><code>is_expired(token)</code></td><td>ตรวจว่า token หมดอายุหรือยัง</td><td><code>bool</code></td></tr><tr><td><code>active_token_count</code> (property)</td><td>จำนวน token ที่ยัง active</td><td><code>int</code></td></tr><tr><td><code>failed_attempts</code> / <code>is_locked_out</code> / <code>remaining_lockout_sec()</code></td><td>ดูสถานะความพยายาม/ล็อกเอาต์</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from security.auth_provider import AuthProvider
+
+auth = AuthProvider(secret=b&#x27;device-secret&#x27;)
+token = auth.generate_token()       # 64-char hex
+if auth.authenticate(token):
+    print(&quot;เข้าถึงได้&quot;)</code></pre></div>
+<h2>REPLLock — ปิดช่องทางเข้า REPL</h2>
+<p><code>REPLLock()</code> — ป้องกันการขโมย code ผ่าน REPL <strong>คำเตือน:</strong> UART0 REPL ฝังใน firmware — ปิดได้แค่ redirect/ปิด interrupt ไม่ได้ปิด hardware 100%</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>disable_uart0()</code></td><td>ปิด Ctrl+C/D + redirect stdout/stdin (บล็อกการใช้งาน REPL)</td></tr><tr><td><code>disable_webrepl()</code> / <code>enable_webrepl(password)</code></td><td>หยุด/เริ่ม WebREPL (port 8266)</td></tr><tr><td><code>disable_tcp_repl()</code> / <code>disable_ble_repl()</code> / <code>disable_uart1_repl()</code> + enable ตัวเดียวกัน</td><td>ปิด/เปิดช่อง REPL แบบ custom</td></tr><tr><td><code>status()</code></td><td><code>dict</code> สถานะแต่ละช่อง</td></tr><tr><td><code>is_locked()</code></td><td>ทุกช่องถูกล็อคแล้วหรือยัง</td></tr><tr><td><code>lockdown()</code> / <code>unlock_all()</code></td><td>ล็อคทุกช่อง / ปลดทุกช่อง (dev เท่านั้น!)</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from security.repl_lock import REPLLock
+
+lock = REPLLock()
+lock.lockdown()      # ปิด UART0 + WebREPL + TCP + BLE + UART1
+print(lock.status())</code></pre></div>
+<h2>AuditLogger — บันทึกคำสั่ง + ตรวจจับ suspicious</h2>
+<p><code>AuditLogger(log_file='audit.log', max_entries=100, max_file_bytes=10240)</code> — buffer ใน RAM (FIFO) แล้ว flush ลง flash ทุก 10 รายการ หรือทันทีเมื่อเจอ ERROR/SECURITY (กันเขียน flash ถี่เกิน)</p>
+<div class="table-wrap"><table><thead><tr><th>method/constant</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>log_command(transport, command, result)</code></td><td>บันทึกคำสั่ง (transport: <code>'uart'/'tcp'/'ble'/'web'</code>)</td></tr><tr><td><code>log_event(level, message)</code></td><td>บันทึกเหตุการณ์ (level: <code>LEVEL_INFO</code>/<code>LEVEL_WARN</code>/<code>LEVEL_ERROR</code>/<code>LEVEL_SECURITY</code>)</td></tr><tr><td><code>get_recent_logs(count)</code> / <code>get_all_logs()</code></td><td>อ่านจาก RAM buffer</td></tr><tr><td><code>get_suspicious_count()</code></td><td>จำนวนที่ตรวจจับได้ (คำสั่งเช่น <code>exec</code>, <code>import os</code>, <code>open(</code>, <code>eval(</code>…)</td></tr><tr><td><code>read_log_file()</code></td><td>อ่านไฟล์ log จาก flash</td></tr><tr><td><code>clear_logs()</code> / <code>flush()</code></td><td>ล้างทั้งหมด / บังคับ flush</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from security.audit_logger import AuditLogger
+
+audit = AuditLogger(&#x27;audit.log&#x27;)
+audit.log_command(&#x27;tcp&#x27;, &#x27;led on&#x27;, &#x27;✅ LED ON&#x27;)
+audit.log_event(AuditLogger.LEVEL_SECURITY, &#x27;Failed auth attempt&#x27;)
+print(audit.get_recent_logs(5))</code></pre></div>
+<h2>SecurityManager — ตัวรวมทุกอย่าง (ใช้งานจริง)</h2>
+<p><code>SecurityManager(config_file=None, master_key=None, log_file='audit.log', secret_file='secrets.dat', dev_mode=False)</code> — รวม <code>REPLLock</code> + <code>AuthProvider</code> + <code>AuditLogger</code> + <code>SecretStore</code> เป็นหนึ่งเดียว</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>lockdown()</code></td><td>🔒 ปิด REPL ทุกช่อง + ล็อก secret store + log event (ข้ามถ้า <code>dev_mode=True</code>)</td></tr><tr><td><code>unlock_dev()</code></td><td>🔓 ปลดทั้งหมด (dev เท่านั้น!)</td></tr><tr><td><code>generate_token()</code></td><td>สร้าง token (ผ่าน <code>auth</code>) + log</td></tr><tr><td><code>authenticate(token)</code></td><td>ตรวจ token + log เมื่อล้มเหลว</td></tr><tr><td><code>secure_dispatch(dispatcher, line, transport, auth_token=None)</code></td><td>wrap <code>CommandDispatcher.dispatch()</code> ให้ต้อง auth ก่อน (รองรับคำสั่ง <code>login &lt;token&gt;</code>)</td></tr><tr><td><code>get_status()</code> / <code>print_status()</code></td><td>ดูสถานะทุกอย่าง</td></tr><tr><td><code>emergency_wipe()</code></td><td>🆘 ล้าง secrets + audit + revoke token + lock (เครื่องถูก compromise)</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from security import SecurityManager
+
+sec = SecurityManager()
+sec.lockdown()
+print(sec.get_status())</code></pre></div>
+<p><code>dev_mode=True</code> จะทำให้ <code>lockdown()</code> ข้ามการล็อก — ใช้ตอนพัฒนาเพื่อไม่ให้ล็อกตัวเองตาย</p>
+<hr>
+<h2>สรุปการเลือกใช้</h2>
+<ul><li><strong>เดี๋ยวนี้แค่ "กันคนอื่นเข้า" ก็พอ:</strong> <code>SecurityManager.lockdown()</code> — 2 บรรทัดจบ</li><li><strong>แค่เก็บ credential ปลอดภัย:</strong> <code>SecretStore</code></li><li><strong>แค่ทำ API ที่ต้อง auth:</strong> <code>AuthProvider</code></li><li><strong>แค่กัน REPL:</strong> <code>REPLLock</code></li><li><strong>แค่สืบย้อนหลัง:</strong> <code>AuditLogger</code></li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>crypto.hash_helpers</code> — <code>HashHelper</code> เป็น core ของ PBKDF2/token ในโมดูลนี้</li><li><code>repl</code> — <code>secure_dispatch()</code> ใช้ wrap <code>CommandDispatcher</code> ก่อนส่งเข้า <code>TCPRepl</code>/<code>BLERepl</code></li><li><code>storage</code> — audit log เขียนลง flash หรือ SD</li><li><code>system.ota</code> — ตั้งความปลอดภัยให้เรียบร้อยก่อน deploy</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -83,13 +83,14 @@ class WiFiManager:
             self.config = {}
             return self.config
     
-    def save_config(self, ssid=None, password=None):
+    def save_config(self, ssid=None, password=None, reconnect_interval=None):
         """
         บันทึก configuration ลงไฟล์ JSON
         
         Args:
             ssid (str): ชื่อ WiFi ที่จะบันทึก (ถ้า None จะใช้ค่าที่มีอยู่)
             password (str): รหัสผ่าน WiFi ที่จะบันทึก (ถ้า None จะใช้ค่าที่มีอยู่)
+            reconnect_interval (int): ระยะเวลาตรวจสอบการเชื่อมต่อซ้ำ (วินาที)
         
         Returns:
             bool: True หากบันทึกสำเร็จ, False หากเกิดข้อผิดพลาด
@@ -98,6 +99,8 @@ class WiFiManager:
             self.config["ssid"] = ssid
         if password is not None:
             self.config["password"] = password
+        if reconnect_interval is not None:
+            self.config["reconnect_interval"] = reconnect_interval
         
         # เพิ่มค่า default หากยังไม่มี
         if "auto_connect" not in self.config:

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WiFi Manager &amp; Portal — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="จัดการ WiFi แบบ STA/AP + Config Portal — เชื่อมต่อ สแกน keep-alive และตั้งค่าผ่านเว็บ">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="../getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link active" href="wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="../cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="../sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="../display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="../output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="../input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="../p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="../audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="../io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="../io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="../storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="../system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="../security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="../crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="../repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>🌐 Network &amp; Communication</span><span>/</span><span>WiFi Manager &amp; Portal</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>wifi</code> เป็นหมวดที่ใช้เชื่อมต่อ ESP32 เข้ากับเครือข่าย WiFi ก่อนใช้งาน lib การสื่อสารอื่น ๆ (MQTT, HTTP, Telegram, Cloud) ประกอบด้วย 2 คลาส:</p>
+<ul><li><strong><code>WiFiManager</code></strong> — ตัวหลักสำหรับ STA mode: เชื่อมต่อ WiFi, สแกนสัญญาณ, เก็บค่า SSID/รหัสผ่านลงไฟล์ JSON, โหมด keep-alive เชื่อมต่อใหม่อัตโนมัติเมื่อสัญญาณหลุด</li><li><strong><code>WiFiPortal</code></strong> — เปิด AP mode + Web Server (port 80) ให้ผู้ใช้ตั้งค่า WiFi ผ่านเบราว์เซอร์ แล้วบอร์ดจะเชื่อมต่อเอง เหมาะกับสินค้าที่ไม่มีหน้าจอตั้งค่า (เข้าที่ <code>http://192.168.4.1</code>)</li></ul>
+<p>แนวคิดหลัก: <strong>Config-Driven</strong> — โหลด/บันทึกค่าเชื่อมต่อจาก <code>wifi_config.json</code> ทำให้เปลี่ยน WiFi ได้โดยไม่ต้องแก้โค้ด</p>
+<h2>การติดตั้ง / import</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from wifi.wifimanager import WiFiManager, WiFiPortal</code></pre></div>
+<h2>Constructor</h2>
+<div class="table-wrap"><table><thead><tr><th>คลาส</th><th>พารามิเตอร์</th><th>ค่าเริ่มต้น</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>WiFiManager</code></td><td><code>config_file</code></td><td><code>"wifi_config.json"</code></td><td>ไฟล์ config ที่เก็บ ssid/password/settings</td></tr><tr><td><code>WiFiPortal</code></td><td><code>config_file</code></td><td><code>"wifi_config.json"</code></td><td>ใช้ร่วมกับ <code>WiFiManager</code> ตัวใน</td></tr></tbody></table></div>
+<h2>ตาราง API</h2>
+<h3>WiFiManager</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>load_config()</code></td><td>หลังสร้าง instance ครั้งแรก</td><td>—</td><td><code>dict</code> (config หรือ <code>{}</code>)</td><td>เรียกโดย <code>connect()</code> อัตโนมัติ</td></tr><tr><td><code>save_config(ssid, password, reconnect_interval)</code></td><td>บันทึกค่า WiFi ก่อน/หลังเชื่อมต่อ</td><td><code>ssid: str</code>, <code>password: str</code>, <code>reconnect_interval: int</code></td><td><code>bool</code></td><td>มักเรียกก่อน <code>connect()</code></td></tr><tr><td><code>update_config(new_config)</code></td><td>merge config ใหม่ทีเดียว</td><td><code>new_config: dict</code></td><td><code>bool</code></td><td>ต่อจาก <code>get_config()</code></td></tr><tr><td><code>get_config()</code></td><td>อ่าน config ปัจจุบัน</td><td>—</td><td><code>dict</code> (copy)</td><td>—</td></tr><tr><td><code>is_connected()</code></td><td>เช็คสถานะก่อนทำงานอื่น</td><td>—</td><td><code>bool</code></td><td>ใช้ในลูปหลักกับ <code>keep_alive()</code></td></tr><tr><td><code>get_ip()</code></td><td>เอา IP ไปแสดง/ใช้งาน</td><td>—</td><td><code>str</code> หรือ <code>None</code></td><td>หลัง <code>connect()</code> สำเร็จ</td></tr><tr><td><code>get_connection_info()</code></td><td>ดึงข้อมูลครบ IP/MAC/SSID</td><td>—</td><td><code>dict</code></td><td>หลัง <code>connect()</code></td></tr><tr><td><code>scan_networks()</code></td><td>หา WiFi ที่อยู่ใกล้</td><td>—</td><td><code>list[{ssid, signal, channel, secure}]</code></td><td>async — ก่อน <code>connect()</code></td></tr><tr><td><code>connect(ssid, password, timeout)</code></td><td>เชื่อมต่อ WiFi</td><td><code>ssid/password/timeout</code> (None=ใช้จาก config)</td><td><code>bool</code></td><td>async — เป็นหัวใจหลัก</td></tr><tr><td><code>disconnect()</code></td><td>ตัดการเชื่อมต่อ</td><td>—</td><td><code>bool</code></td><td>async — ก่อน <code>reconnect()</code></td></tr><tr><td><code>reconnect()</code></td><td>ตัดแล้วต่อใหม่</td><td>—</td><td><code>bool</code></td><td>async — เรียกเองใน <code>connect()</code> ถ้าพลาด</td></tr><tr><td><code>keep_alive(check_interval)</code></td><td>รักษาการเชื่อมต่ออัตโนมัติ</td><td><code>check_interval: int</code> (วินาที)</td><td>ไม่คืนค่า — วนลูปไม่รู้จบ</td><td>async — ใช้กับ <code>stop_keep_alive()</code></td></tr><tr><td><code>stop_keep_alive()</code></td><td>หยุดลูป keep-alive</td><td>—</td><td>—</td><td>ใช้คู่กับ <code>keep_alive()</code></td></tr><tr><td><code>set_auto_connect(enabled)</code></td><td>เปิด/ปิด auto-connect</td><td><code>enabled: bool</code></td><td>—</td><td>ใช้กับ <code>connect_auto()</code></td></tr><tr><td><code>connect_auto()</code></td><td>เชื่อมตาม config ถ้า auto_connect=True</td><td>—</td><td><code>bool</code></td><td>async — ใช้ตอน boot</td></tr><tr><td><code>get_status()</code></td><td>แสดงสถานะเป็นข้อความ</td><td>—</td><td><code>str</code></td><td>—</td></tr></tbody></table></div>
+<h3>WiFiPortal</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>start_ap_mode(ssid, password)</code></td><td>เปิด AP เป็นจุดตั้งค่า</td><td><code>ssid: str="ESP32-Setup"</code>, <code>password: str="12345678"</code></td><td><code>bool</code></td><td>async — เรียกภายใน <code>start_portal()</code></td></tr><tr><td><code>start_portal(ap_ssid, ap_password)</code></td><td>เริ่ม Portal ทั้งหมด (AP+Server)</td><td>ชื่อ/รหัส AP</td><td><code>bool</code></td><td>async — บล็อกจนกว่าจะ <code>stop()</code></td></tr><tr><td><code>stop()</code></td><td>ปิด server + AP</td><td>—</td><td>—</td><td>async — เรียกจาก <code>KeyboardInterrupt</code></td></tr></tbody></table></div>
+<h2>ตัวอย่างการใช้งาน</h2>
+<h3>🟢 พื้นฐาน — เชื่อมต่อ WiFi</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from wifi.wifimanager import WiFiManager
+
+async def main():
+    wifi = WiFiManager()
+    wifi.save_config(ssid=&quot;my_wifi&quot;, password=&quot;my_pass&quot;)
+
+    if await wifi.connect():
+        print(f&quot;IP: {wifi.get_ip()}&quot;)
+        print(wifi.get_connection_info())
+    else:
+        print(&quot;เชื่อมต่อไม่สำเร็จ&quot;)
+
+asyncio.run(main())</code></pre></div>
+<h3>🟡 ใช้งานจริง — keep-alive รักษาการเชื่อมต่อ</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from wifi.wifimanager import WiFiManager
+
+wifi = WiFiManager()
+
+async def main():
+    wifi.save_config(ssid=&quot;my_wifi&quot;, password=&quot;my_pass&quot;, reconnect_interval=30)
+    await wifi.connect()
+
+    # รัน keep-alive กับงานอื่นพร้อมกัน (เช่น MQTT)
+    keep_task = asyncio.create_task(wifi.keep_alive())
+
+    while True:
+        if wifi.is_connected():
+            print(&quot;🟢 ออนไลน์&quot;)
+        await asyncio.sleep(10)
+
+asyncio.run(main())</code></pre></div>
+<h3>🔴 ขั้นสูง — WiFi Config Portal</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from wifi.wifimanager import WiFiPortal
+
+async def main():
+    portal = WiFiPortal()
+
+    # เปิด AP ชื่อ ESP32-Setup → ผู้ใช้เข้าหน้าเว็บ 192.168.4.1 ตั้งค่า WiFi
+    # เมื่อบันทึกสำเร็จบอร์ดจะเชื่อมต่อ WiFi จริงทันที
+    await portal.start_portal(ap_ssid=&quot;ESP32-Setup&quot;, ap_password=&quot;12345678&quot;)
+
+asyncio.run(main())</code></pre></div>
+<h2>การต่อวงจร</h2>
+<p>WiFi เป็น wireless — ไม่ต้องต่อสายเพิ่ม ข้อกำหนดคือบอร์ดต้องมีเสาสัญญาณหรือ PCB antenna</p>
+<div class="table-wrap"><table><thead><tr><th>ข้อ</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>AP mode IP</td><td><code>192.168.4.1</code> เสมอ</td></tr><tr><td>พอร์ตเว็บ</td><td>80 (แก้ไขใน <code>WiFiPortal._create_server()</code>)</td></tr></tbody></table></div>
+<h2>ข้อควรระวัง</h2>
+<ul><li><strong>ADC2 ชน WiFi</strong>: เมื่อเปิด WiFi ต้องใช้ ADC1 (GPIO0–4) เท่านั้น — ADC2 ของ C3 มีช่องเดียวคือ GPIO5 และจะพังเมื่อ WiFi ทำงาน</li><li><code>keep_alive()</code> เป็น infinite loop — ต้องรันเป็น <code>asyncio.create_task()</code> ไม่ใช่ <code>await</code> ตรง ๆ</li><li>ถ้าไม่มี <code>storage.config_mgr</code> จะ fallback เปิดไฟล์ JSON เอง (ทำงานได้ปกติ)</li><li>README เดิมของ lib อธิบายพารามิเตอร์ <code>max_retries</code>/<code>get_rssi()</code> ไว้แต่โค้ดจริงไม่มี — ใช้ API ในตารางนี้</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>mqtt.mqttmanager.MQTTManager</code> — ส่งข้อมูลขึ้น cloud หลังต่อ WiFi</li><li><code>http.httpclient.HTTPClient</code> — เรียก REST API</li><li><code>telegram.telegram_bot.TelegramBot</code> — แจ้งเตือนผ่าน Telegram</li><li><code>system.sysinfo.SysInfo</code> — ใช้ในตอน boot เพื่อเช็คสถานะ</li><li><code>storage.config_mgr.JsonConfigManager</code> — backend ของ config อัตโนมัติ</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "../";</script>
+<script src="../assets/js/search-index.js"></script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

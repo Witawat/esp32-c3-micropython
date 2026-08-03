@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Displays — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="จอแสดงผล 7 ชนิด — OLED, TFT LCD, E-Paper, Character LCD, LED Matrix, และ TJC HMI">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link active" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🖥️ Display</span><span>/</span><span>Displays</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>display</code> มีไดรเวอร์ <strong>7 ประเภท</strong> แบ่งตามเทคโนโลยี:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>จอ</th><th>Interface</th><th>ขนาด</th></tr></thead><tbody><tr><td><code>ssd1306.py</code></td><td>OLED (SSD1306)</td><td>I2C หรือ SPI</td><td>128x64, 128x32</td></tr><tr><td><code>ili9341.py</code></td><td>TFT Color</td><td>SPI</td><td>240x320</td></tr><tr><td><code>st7789.py</code></td><td>TFT Color</td><td>SPI</td><td>135x240, 240x240, 240x320</td></tr><tr><td><code>epaper.py</code></td><td>E-Ink</td><td>SPI</td><td>2.9" 296x128 (Full/Partial)</td></tr><tr><td><code>lcd_i2c.py</code></td><td>Character LCD (PCF8574)</td><td>I2C</td><td>16x2, 20x4</td></tr><tr><td><code>max7219.py</code></td><td>8x8 LED Matrix</td><td>SPI</td><td>1+ module (daisy-chain)</td></tr><tr><td><code>tjc_hmi.py</code></td><td>TJC HMI Touchscreen (T1)</td><td>UART</td><td>ทุกรุ่น T1</td></tr></tbody></table></div>
+<p>หลักการ: <strong>SSD1306/ILI9341/ST7789/EPaper</strong> วาดลง buffer (ใช้ <code>framebuf</code>) แล้วค่อย <code>show()</code> — ต่างกับ <strong>LCD_I2C/MAX7219</strong> ที่เขียนทีละ byte ตรงๆ และ <strong>TJC HMI</strong> ที่สั่งผ่าน command string ผ่าน UART</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+from display.ssd1306 import SSD1306_I2C
+from display.ili9341 import ILI9341</code></pre></div>
+<hr>
+<h2>SSD1306 — OLED (I2C / SPI)</h2>
+<p><strong>I2C:</strong> <code>SSD1306_I2C(width=128, height=64, sda=21, scl=22, address=0x3C, freq=400000, i2c=None)</code> <strong>SPI:</strong> <code>SSD1306_SPI(width=128, height=64, sck=18, mosi=23, cs=5, dc=4, rst=2, baudrate=8000000, spi=None)</code></p>
+<p><code>SSD1306</code> เป็น base class ที่มี framebuf (<code>oled.framebuf</code> ใช้ได้โดยตรง)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>text(string, x, y, color=1)</code></td><td>เขียนข้อความ (font 8x8)</td><td>x, y = พิกัดซ้ายบน</td></tr><tr><td><code>center_text(string, y, color=1)</code></td><td>ข้อความกลางจอ</td><td>y = แถว</td></tr><tr><td><code>pixel</code> / <code>line</code> / <code>rect</code> / <code>fill_rect</code> / <code>hline</code> / <code>vline</code></td><td>วาดรูป</td><td>(x, y, ..., color)</td></tr><tr><td><code>fill(color)</code></td><td>เติมทั้งจอ</td><td>0=ดำ 1=ขาว</td></tr><tr><td><code>show()</code></td><td><strong>อัปเดตจอจาก buffer</strong> (ต้องเรียกเสมอหลังวาด)</td><td>—</td></tr><tr><td><code>clear(show=True)</code></td><td>ล้างจอ</td><td>—</td></tr><tr><td><code>contrast(value)</code></td><td>ความสว่าง 0–255</td><td>int</td></tr><tr><td><code>invert(bool)</code></td><td>กลับสี</td><td>—</td></tr><tr><td><code>on()</code> / <code>off()</code></td><td>เปิด/ปิดจอ</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">oled = SSD1306_I2C(width=128, height=64, sda=21, scl=22)
+oled.center_text(&quot;Hello!&quot;, 28)
+oled.show()</code></pre></div>
+<p>ข้อควรระวัง: ต้องมี <code>framebuf</code> ใน firmware (มีอยู่แล้วใน MicroPython ปกติ) — buffer ใช้ RAM 1KB (128x64)</p>
+<h2>ILI9341 — TFT 240x320 (SPI)</h2>
+<p><code>ILI9341(sck=18, mosi=23, miso=19, cs=5, dc=4, rst=2, baudrate=40000000, width=240, height=320, rotation=0, spi=None)</code></p>
+<ul><li><code>rotation</code>: 0=Portrait, 1=Landscape, 2=Portrait flipped, 3=Landscape flipped</li></ul>
+<p><strong>สี:</strong> ค่าคงที่ <code>BLACK, WHITE, RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, ORANGE, GRAY</code> + ฟังก์ชัน <code>color565(r, g, b)</code></p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>text(string, x, y, color=WHITE, bg=BLACK, scale=1)</code></td><td>เขียนข้อความ</td><td>scale = ขนาด (1,2,3…)</td></tr><tr><td><code>pixel(x, y, color)</code> / <code>line(x0,y0,x1,y1,color)</code></td><td>จุด / เส้น (Bresenham)</td><td>—</td></tr><tr><td><code>rect(x,y,w,h,color)</code> / <code>fill_rect(...)</code></td><td>สี่เหลี่ยม</td><td>—</td></tr><tr><td><code>fill(color)</code></td><td>เติมจอ</td><td>—</td></tr><tr><td><code>set_rotation(rotation)</code></td><td>หมุนจอ 0–3</td><td>สลับ width/height อัตโนมัติ</td></tr><tr><td><code>on()</code> / <code>off()</code> / <code>invert(bool)</code></td><td>จอ</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">tft = ILI9341(sck=18, mosi=23, cs=5, dc=4, rst=2)
+tft.fill(BLACK)
+tft.text(&quot;Hello!&quot;, 10, 10, WHITE, scale=2)
+tft.rect(50, 50, 100, 80, RED)</code></pre></div>
+<h2>ST7789 — TFT (SPI)</h2>
+<p><code>ST7789(sck=18, mosi=19, cs=5, dc=16, rst=23, baudrate=40000000, width=240, height=240, x_offset=0, y_offset=0, rotation=0, spi=None)</code></p>
+<ul><li><strong>จอ 135x240 (1.14"):</strong> ต้องระบุ <code>x_offset=52, y_offset=40</code></li><li><strong>จอ 240x240 (1.3"/1.54"):</strong> ใช้ค่า default ได้</li></ul>
+<p>method ชุดเดียวกับ ILI9341 (<code>fill, pixel, rect, fill_rect, hline, vline, text(...,scale), on, off, invert, clear</code>) ยกเว้นไม่มี <code>line()</code></p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">tft = ST7789(sck=18, mosi=19, cs=5, dc=16, rst=23, width=135, height=240, x_offset=52, y_offset=40)
+tft.text(&quot;ESP32&quot;, 10, 10, WHITE, scale=2)</code></pre></div>
+<h2>EPaper — E-Ink 2.9" (SPI)</h2>
+<p><code>EPaper29(din=23, clk=18, cs=5, dc=4, rst=2, busy=15, baudrate=4000000, spi=None)</code></p>
+<ul><li>ค่าคงที่: <code>EPaper29.WIDTH=296</code>, <code>EPaper29.HEIGHT=128</code></li><li>สี: <code>BLACK=0</code>, <code>WHITE=1</code> (ขาวคือค่า default buffer)</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>text/line/rect/fill_rect/pixel(...)</code></td><td>วาดลง buffer</td><td>เหมือน framebuf</td></tr><tr><td><code>fill(color=WHITE)</code></td><td>เติม buffer</td><td>—</td></tr><tr><td><code>show(partial=False)</code></td><td><strong>ส่ง buffer ไปจอ</strong> + รอ BUSY</td><td><code>partial=True</code> = อัปเดตเร็วขึ้น</td></tr><tr><td><code>clear()</code></td><td>ล้างจอเป็นขาว</td><td>—</td></tr><tr><td><code>sleep()</code></td><td>เข้า deep sleep</td><td><strong>ควรเรียกเสมอหลัง update</strong></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">epd = EPaper29(din=23, clk=18, cs=5, dc=4, rst=2, busy=15)
+epd.text(&quot;Hello EPaper!&quot;, 10, 10)
+epd.show()
+epd.sleep()</code></pre></div>
+<p>ข้อควรระวัง: E-Ink กินไฟเฉพาะตอน refresh — ต้อง <code>sleep()</code> ทันทีหลังแสดงผล และ <strong>ห้าม refresh ถี่เกินไป</strong> (จอเสื่อม/ภาพค้าง)</p>
+<h2>LCD_I2C — Character LCD 16x2 / 20x4</h2>
+<p><code>LCD_I2C(sda=21, scl=22, address=0x27, freq=100000, cols=16, rows=2, i2c=None)</code></p>
+<ul><li><code>address</code>: PCF8574 = <code>0x27</code>, PCF8574A = <code>0x3F</code> (ขา A0/A1/A2 กำหนดเพิ่ม)</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>print(text)</code></td><td>พิมพ์ข้อความ ณ cursor ปัจจุบัน</td><td>—</td></tr><tr><td><code>print_line(text, row=0, clear_line=True)</code></td><td>พิมพ์เต็มบรรทัด</td><td>row = 0/1 (16x2) หรือ 0–3 (20x4)</td></tr><tr><td><code>set_cursor(col, row)</code></td><td>ตั้ง cursor</td><td>col/row อัตโนมัติ clamp</td></tr><tr><td><code>clear()</code> / <code>home()</code></td><td>ล้างจอ / กลับ (0,0)</td><td>—</td></tr><tr><td><code>backlight(on=True)</code></td><td>เปิด/ปิดไฟ</td><td>—</td></tr><tr><td><code>display_on(on=True)</code> / <code>cursor(on=False)</code> / <code>blink(on=False)</code></td><td>จอ / cursor / blink</td><td>—</td></tr><tr><td><code>create_char(location, charmap)</code></td><td>สร้างอักษร custom 0–7</td><td>charmap = list 8 bytes</td></tr><tr><td><code>write_char(location)</code></td><td>แสดงอักษร custom</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">lcd = LCD_I2C(sda=21, scl=22, address=0x27, cols=16, rows=2)
+lcd.print_line(&quot;ESP32-C3&quot;, row=0)
+lcd.print_line(&quot;Hello!&quot;, row=1)</code></pre></div>
+<p>ข้อควรระวัง: ต้องใช้โมดูล PCF8574 backpack เท่านั้น — ตั้ง address ให้ตรง (0x27 หรือ 0x3F) ถ้าจอไม่ตอบสนอง</p>
+<h2>MAX7219 — 8x8 LED Matrix (SPI)</h2>
+<p><code>MAX7219(din=23, clk=18, cs=5, num_devices=1, baudrate=10000000, spi=None)</code></p>
+<ul><li>Daisy-chain: ต่อ <code>DOUT</code> module แรก → <code>DIN</code> ถัดไป, ใช้ CS ร่วมกัน, ตั้ง <code>num_devices</code></li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>set_pixel(x, y, on=True, device=0)</code></td><td>ตั้ง LED</td><td>x=คอลัมน์ 0–7, y=แถว 0–7</td></tr><tr><td><code>show_char(char, device=0)</code></td><td>แสดงอักษร (font 5x7 subset)</td><td>ตัวอักษร A-Z 0-9 + <code>!-.:</code></td></tr><tr><td><code>scroll_text(text, delay_ms=80, device=0)</code></td><td>เลื่อนข้อความขวา→ซ้าย</td><td>delay_ms = ความเร็ว</td></tr><tr><td><code>set_row(row, value, device=0)</code></td><td>ตั้งทั้งแถว</td><td>value = bitmask</td></tr><tr><td><code>brightness(level, device=None)</code></td><td>ความสว่าง 0–15</td><td>None = ทุก module</td></tr><tr><td><code>fill(on=True)</code> / <code>clear()</code> / <code>show()</code></td><td>จอ</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">matrix = MAX7219(din=23, clk=18, cs=5)
+matrix.brightness(10)
+matrix.scroll_text(&quot;HELLO&quot;, delay_ms=50)</code></pre></div>
+<h2>TJC HMI — Touchscreen T1 Series (UART)</h2>
+<p><code>TJCManager(uart_id=2, tx_pin=17, rx_pin=16, baudrate=115200, bkcmd=3, dim=100, rx_buf=512, config_path=None)</code></p>
+<ul><li><code>bkcmd</code>: 0=ปิด response, 1=success, 2=error, 3=ทั้งสอง</li><li>ต่อ: TJC <code>TX→ESP32 RX</code>, <code>RX→ESP32 TX</code>, VCC→5V (ตามรุ่น)</li><li>⚠️ บน ESP32-C3 มี UART แค่ UART0/UART1 — ค่า default <code>uart_id=2</code> ใช้ไม่ได้ ต้องส่ง <code>uart_id=1</code></li></ul>
+<p><strong>ต้อง async:</strong> <code>await tjc.start()</code> เริ่ม RX parser + command worker</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import asyncio
+tjc = TJCManager(uart_id=1, tx_pin=20, rx_pin=21)   # C3: ใช้ UART1 (ไม่ใช่ uart_id=2)
+
+async def main():
+    await tjc.start()
+    tjc.page(0)
+    tjc.t0.txt = &quot;Hello&quot;     # เขียน widget แบบ Pythonic
+    tjc.n0.val = 25
+    tjc.add_command(&#x27;led&#x27;, lambda cmd, params: print(&quot;cmd:&quot;, params))
+
+asyncio.run(main())</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>page(id)</code> / <code>click(comp, state)</code> / <code>vis(comp, show)</code> / <code>tsw(comp, enable)</code></td><td>ควบคุมหน้า/widget</td><td>comp เช่น <code>'b0'</code></td></tr><tr><td><code>get(expr)</code></td><td>ขอค่าจาก TJC</td><td><code>get('n0.val')</code> → on_numeric</td></tr><tr><td><code>dim(percent)</code> / <code>baud(rate)</code> / <code>sleep_cmd(enable)</code> / <code>ussp(sec)</code></td><td>ระบบ</td><td>0–100 / bps / sleep / auto-sleep</td></tr><tr><td><code>beep(ms)</code> / <code>play(ch, file_id, vol=None)</code> / <code>volume(vol)</code></td><td>เสียง</td><td>—</td></tr><tr><td><code>add(chart_id, channel, value)</code> / <code>cle(...)</code></td><td>กราฟ curve</td><td>channel 0–3</td></tr><tr><td><code>wepo(addr, data)</code> / <code>repo(addr, length)</code></td><td>EEPROM</td><td>บันทึก/อ่านข้อมูล</td></tr><tr><td><code>rtc_sync(dt_tuple=None)</code></td><td>ตั้งเวลา RTC</td><td>default = เวลา MCU</td></tr><tr><td><code>send(cmd)</code></td><td>ส่งคำสั่งดิบ</td><td>เช่น <code>'t0.txt="Hi"'</code></td></tr></tbody></table></div>
+<p><strong>Widget access (Pythonic):</strong> <code>tjc.tjc.&lt;widget&gt;.&lt;attr&gt; = value</code> → ส่ง <code>t0.txt="Hello"</code> ให้อัตโนมัติ (string → <code>"..."</code>, bool → 0/1)</p>
+<p><strong>Callback:</strong> <code>on_touch(fn(page,comp,event))</code>, <code>on_touch_coord</code>, <code>on_page</code>, <code>on_numeric(fn(v))</code>, <code>on_string</code>, <code>on_system</code>, <code>on_error(code)</code>, <code>on_command(fn(cmd, params))</code>, <code>on_raw</code> — ใช้ <code>add_command('name', handler)</code> รับ custom command จาก TJC (<code>prints "cmd|p1|p2;"</code>)</p>
+<p>ข้อควรระวัง: ต้องดีไซน์ UI ใน TJC Editor ก่อน (สร้าง widget <code>t0</code>, <code>n0</code>...) แล้วอัปโหลดลงจอ — ไดรเวอร์นี้แค่สั่งงาน; <code>ref_stop()</code>/<code>ref_star()</code> ใช้ทำ batch update</p>
+<hr>
+<h2>สรุปการเลือกใช้</h2>
+<ul><li><strong>ข้อความ/ค่าเลขน้อยๆ:</strong> <code>LCD_I2C</code> (ถูกสุด) หรือ <code>SSD1306</code> OLED</li><li><strong>ข้อมูลเป็นกราฟ/หน้าจอสี:</strong> <code>ILI9341</code> / <code>ST7789</code></li><li><strong>แสดงผลนานๆ ประหยัดไฟ:</strong> <code>EPaper29</code></li><li><strong>ตกแต่ง/แสดงตัวอักษรเลื่อน:</strong> <code>MAX7219</code></li><li><strong>มี UI + Touchscreen สำเร็จรูป:</strong> <code>TJCManager</code></li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>io.expander</code> — ดึงขาเพิ่มสำหรับจอที่ใช้หลาย GPIO</li><li><code>storage</code> — เก็บการตั้งค่าจอ (brightness, page)</li><li><code>system</code> — แสดงสถานะระบบ/เวลา</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

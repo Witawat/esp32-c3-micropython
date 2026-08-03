@@ -16,6 +16,7 @@ Features:
 
 import time
 import os
+import gc
 
 try:
     import ubinascii

@@ -282,8 +282,8 @@ class GPSNMEA:
         if not self._nmea_checksum(sentence.strip()):
             return
 
-        talker, _, msg_type = sentence[1:6].partition(",")
         parts = sentence.split(",")
+        msg_type = parts[0][1:]  # e.g. "$GPGGA,..." → "GPGGA"
 
         if msg_type == "GPGGA":
             self._parse_gpgga(parts)

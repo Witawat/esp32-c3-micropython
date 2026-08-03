@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTTP Client &amp; Server — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="HTTPClient สำหรับ REST API (GET/POST/PUT/DELETE) + HTTPServer พร้อม route และ static files">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="../getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="mqtt.html">📨 MQTT</a>
+<a class="nav-link active" href="http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="../cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="../sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="../display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="../output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="../input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="../p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="../audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="../io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="../io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="../storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="../system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="../security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="../crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="../repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>🌐 Network &amp; Communication</span><span>/</span><span>HTTP Client &amp; Server</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>http</code> ประกอบด้วย 2 คลาส:</p>
+<ul><li><strong><code>HTTPClient</code></strong> — ตัวเรียก REST API ไปยังเซิร์ฟเวอร์ภายนอก ใช้ <code>urequests</code> ภายใน รองรับ GET/POST/PUT/DELETE, query string จาก <code>params</code>, ส่ง JSON ผ่าน <code>json_data</code></li><li><strong><code>HTTPServer</code></strong> — เปิดเว็บเซิร์ฟเวอร์บน ESP32 รองรับ route (ผูก path+method กับ handler) และ serve ไฟล์ static จากโฟลเดอร์ <code>/www</code></li></ul>
+<p>แนวคิดหลัก:</p>
+<ul><li>Client: <code>request()</code> เป็นแกนกลาง → method ย่อ (<code>get/post/put/delete</code>) เรียกผ่านมัน</li><li>Server: ลง route ด้วย decorator <code>@server.route("/path")</code> หรือ <code>add_route()</code> แล้วเรียก <code>start()</code> (บล็อก) รับคำขอ</li></ul>
+<h2>การติดตั้ง / import</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from http.httpclient import HTTPClient
+from http.httpserver import HTTPServer</code></pre></div>
+<h2>Constructor</h2>
+<div class="table-wrap"><table><thead><tr><th>คลาส</th><th>พารามิเตอร์</th><th>ค่าเริ่มต้น</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>HTTPClient</code></td><td><code>timeout</code></td><td><code>10</code></td><td>socket timeout (วินาที)</td></tr><tr><td><code>HTTPServer</code></td><td><code>host</code>, <code>port</code></td><td><code>"0.0.0.0"</code>, <code>80</code></td><td>ที่อยู่และพอร์ตที่รับคำขอ</td></tr></tbody></table></div>
+<h2>ตาราง API</h2>
+<h3>HTTPClient</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>request(method, url, headers, params, data, json_data)</code></td><td>ส่ง request ใด ๆ</td><td><code>method: str</code>, <code>url</code>, <code>headers: dict</code>, <code>params: dict</code> (→query string), <code>data: bytes/str</code>, <code>json_data: dict</code></td><td>Response object (urequests)</td><td>เป็นแกนกลางของ method ย่อทุกตัว</td></tr><tr><td><code>get(url, headers, params)</code></td><td>อ่านข้อมูลจาก server</td><td>URL + optional headers/params</td><td>Response</td><td>ใช้กับ <code>response_json()</code></td></tr><tr><td><code>post(url, headers, data, json_data)</code></td><td>ส่งข้อมูลใหม่</td><td>data (form) หรือ json_data</td><td>Response</td><td>ใช้กับ <code>response_json()</code></td></tr><tr><td><code>put(url, headers, data, json_data)</code></td><td>อัปเดตข้อมูล</td><td>เหมือน post</td><td>Response</td><td>—</td></tr><tr><td><code>delete(url, headers)</code></td><td>ลบข้อมูล</td><td>URL</td><td>Response</td><td>—</td></tr><tr><td><code>response_json(resp)</code></td><td>แปลง Response เป็น dict</td><td><code>resp</code></td><td><code>dict</code> หรือ <code>None</code></td><td>static — ใช้กับผลของ get/post</td></tr><tr><td><code>response_text(resp)</code></td><td>แปลง Response เป็นข้อความ</td><td><code>resp</code></td><td><code>str</code></td><td>static</td></tr></tbody></table></div>
+<h3>HTTPServer</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>route(path, method)</code></td><td>decorator ลง route</td><td><code>path: str</code>, <code>method="GET"</code></td><td>decorator</td><td>ใช้กับ <code>start()</code></td></tr><tr><td><code>add_route(path, handler, method)</code></td><td>ลง route แบบปกติ</td><td><code>handler(req_dict) -&gt; (status, ctype, body)</code> หรือค่าใด ๆ</td><td>—</td><td>ใช้กับ <code>start()</code></td></tr><tr><td><code>start()</code></td><td>เริ่ม server (บล็อก)</td><td>—</td><td>ไม่คืนค่า — วน accept ตลอด</td><td>ต้องมี route หรือ <code>/www</code></td></tr><tr><td><code>stop()</code></td><td>หยุด server</td><td>—</td><td>—</td><td>เรียกจาก interrupt</td></tr></tbody></table></div>
+<p>Handler คืนค่าได้ 2 แบบ:</p>
+<ul><li>tuple <code>(status, content_type, body)</code> — เช่น <code>(200, "application/json", '{"ok":1}')</code></li><li>ค่าธรรมดา → wrap เป็น <code>200/text/plain</code></li></ul>
+<h2>ตัวอย่างการใช้งาน</h2>
+<h3>🟢 พื้นฐาน — HTTP Client เรียก API</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from http.httpclient import HTTPClient
+
+client = HTTPClient(timeout=5)
+
+# GET + แปลง JSON
+resp = client.get(&quot;https://httpbin.org/get&quot;, params={&quot;device&quot;: &quot;esp32&quot;})
+data = HTTPClient.response_json(resp)
+print(data)
+
+# POST JSON
+resp = client.post(&quot;https://httpbin.org/post&quot;,
+                   json_data={&quot;temp&quot;: 25.5, &quot;hum&quot;: 60})
+print(HTTPClient.response_json(resp))</code></pre></div>
+<h3>🟡 ใช้งานจริง — HTTP Server ควบคุม GPIO</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import json
+from machine import Pin
+from http.httpserver import HTTPServer
+
+led = Pin(2, Pin.OUT)
+server = HTTPServer(port=80)
+
+@server.route(&quot;/led&quot;, method=&quot;POST&quot;)
+def set_led(req):
+    state = req[&quot;body&quot;].strip().lower() in (&quot;1&quot;, &quot;on&quot;, &quot;true&quot;)
+    led.value(1 if state else 0)
+    return (200, &quot;application/json&quot;, json.dumps({&quot;led&quot;: state}))
+
+@server.route(&quot;/status&quot;)
+def status(req):
+    return (200, &quot;application/json&quot;, json.dumps({&quot;led&quot;: bool(led.value())}))
+
+print(&quot;🌐 เริ่ม server... เปิด http://&lt;IP&gt;/status&quot;)
+server.start()</code></pre></div>
+<h3>🔴 ขั้นสูง — Server + static files</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from http.httpserver import HTTPServer
+
+server = HTTPServer(port=80)
+
+server.add_route(&quot;/hello&quot;, lambda req: (200, &quot;text/plain&quot;, &quot;Hello ESP32!&quot;))
+
+# วาง index.html ในโฟลเดอร์ /www บน flash → เปิด http://&lt;IP&gt;/ ได้เลย
+# (ถ้า path ไม่ตรง route ใด server จะพยายามอ่านจาก /www/&lt;path&gt; ก่อนคืน 404)
+
+server.start()</code></pre></div>
+<h2>การต่อวงจร</h2>
+<p>เป็นซอฟต์แวร์ล้วน — ต้องต่อ WiFi/เน็ต สำหรับ Server ควรรู้ IP ของบอร์ด (ใช้ <code>wifi.get_ip()</code> หรือ <code>SysInfo</code>)</p>
+<h2>ข้อควรระวัง</h2>
+<ul><li><strong>HTTPServer เป็น single-threaded blocking</strong> — รับ request ทีละ 1 ตัว <code>start()</code> จะบล็อก ไม่เหมาะกับงาน async พร้อมกัน</li><li>ไม่มี TLS บนฝั่ง server — <code>start()</code> ต้องไม่ถูกเรียกใน async task เดียวกับงานอื่นถ้าไม่ตั้งใจ</li><li>Client ต้องมี <code>urequests</code> ใน firmware ไม่งั้น <code>RuntimeError</code></li><li>Server อ่านไฟล์ static เป็น text (<code>open(full, "r")</code>) — ไฟล์ binary เช่นรูปอาจผิดเพี้ยน</li><li>README เดิมระบุ API ต่างจากโค้ดจริง (<code>send_json()/send_html()</code>, <code>base_url</code>) — ใช้ตารางนี้เป็นหลัก</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>wifi.wifimanager.WiFiManager</code> — เชื่อมต่อเน็ตก่อน Client ทำงาน / รู้ IP สำหรับ Server</li><li><code>http</code> เป็น base ของ <code>cloud.blynk.BlynkClient</code> และ <code>cloud.firebase.FirebaseRTDB</code></li><li><code>storage.sdcard_mgr.SDCardManager</code> — อ่านไฟล์จาก SD มาส่งผ่าน server/upload</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "../";</script>
+<script src="../assets/js/search-index.js"></script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

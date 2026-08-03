@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLE Manager — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="Bluetooth Low Energy — GATT Server, BLE UART และ Sensor Streaming บน ESP32">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="../getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link active" href="ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="../cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="../sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="../display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="../output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="../input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="../p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="../audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="../io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="../io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="../storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="../system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="../security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="../crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="../repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>🌐 Network &amp; Communication</span><span>/</span><span>BLE Manager</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>ble</code> จัดการ Bluetooth Low Energy (BLE) ฝั่ง <strong>Peripheral</strong> (ตัวที่โฆษณาตัวเอง ให้มือถือ/แท็บเล็ตมาเชื่อมต่อ) ประกอบด้วย:</p>
+<ul><li><strong><code>BLEManager</code></strong> — ตัวหลัก: init BLE, เริ่ม GATT Server, advertising, ตั้ง callback เหตุการณ์, ส่งข้อมูลผ่าน notify/indicate</li><li><strong><code>BLEUART</code></strong> — wrapper ให้คุยแบบ serial (คล้าย UART) ผ่าน BLE ใช้คู่กับแอป "Serial Bluetooth Terminal" ได้เลย</li><li><strong><code>BLESensor</code></strong> — ส่งค่าเซ็นเซอร์เป็น JSON ทุกช่วงเวลาที่กำหนด</li><li><strong><code>BLEUUID</code></strong> — ค่าคงที่ UUID มาตรฐาน (Device Info, Battery, UART Service, Sensor)</li></ul>
+<p>แนวคิดหลัก: เรียก <code>init()</code> → <code>start_server()</code> → ตั้ง <code>set_callback()</code> → รอเชื่อมต่อ → ใช้ <code>send_data()</code>/callback รับข้อมูล</p>
+<h2>การติดตั้ง / import</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from ble.blemanager import BLEManager, BLEUART, BLESensor, BLEUUID</code></pre></div>
+<h2>Constructor</h2>
+<div class="table-wrap"><table><thead><tr><th>คลาส</th><th>พารามิเตอร์</th><th>ค่าเริ่มต้น</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>BLEManager</code></td><td><code>device_name</code>, <code>config_file</code></td><td><code>"ESP32-C3"</code>, <code>"ble_config.json"</code></td><td>ชื่ออุปกรณ์ที่เห็นในมือถือ + ไฟล์ config</td></tr><tr><td><code>BLEUART</code></td><td><code>device_name</code></td><td><code>"ESP32-C3-UART"</code></td><td>สร้าง <code>BLEManager</code> ภายในตัวเดียวกับ UART service</td></tr><tr><td><code>BLESensor</code></td><td><code>device_name</code></td><td><code>"ESP32-C3-Sensor"</code></td><td>สร้าง <code>BLEManager</code> ภายในพร้อม sensor service</td></tr><tr><td><code>BLEUUID</code></td><td>—</td><td>—</td><td>ค่าคงที่ UUID เท่านั้น (ไม่ต้อง instantiate)</td></tr></tbody></table></div>
+<h2>ตาราง API</h2>
+<h3>BLEManager</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>load_config()</code></td><td>อัตโนมัติใน constructor</td><td>—</td><td>—</td><td>—</td></tr><tr><td><code>save_config(**kwargs)</code></td><td>บันทึกชื่ออุปกรณ์</td><td><code>device_name</code> ฯลฯ</td><td><code>bool</code></td><td>—</td></tr><tr><td><code>is_available()</code></td><td>เช็คว่าบอร์ดมี BLE</td><td>—</td><td><code>bool</code></td><td>ก่อน <code>init()</code></td></tr><tr><td><code>init()</code></td><td>เริ่ม BLE stack</td><td>—</td><td><code>bool</code></td><td>async — เรียกโดย <code>start_server()</code> อัตโนมัติ</td></tr><tr><td><code>start_server(services)</code></td><td>เริ่ม GATT Server</td><td><code>services: list</code> (None=บริการ default)</td><td><code>bool</code></td><td>async — ต้อง init สำเร็จก่อน</td></tr><tr><td><code>start_simple_server()</code></td><td>เริ่มพร้อม UART service</td><td>—</td><td><code>bool</code></td><td>async — สะดวกสุดสำหรับมือใหม่</td></tr><tr><td><code>set_callback(event, callback)</code></td><td>ลงทะเบียนฟังเหตุการณ์</td><td><code>event</code>: <code>"on_connect"/"on_disconnect"/"on_write"/"on_indicate_done"/"on_uart_rx"</code>, <code>callback</code></td><td>—</td><td>เรียกก่อน <code>start_server()</code></td></tr><tr><td><code>send_data(data, notify, indicate)</code></td><td>ส่งข้อมูลให้ client ที่เชื่อมต่อ</td><td><code>data: str/bytes</code>, <code>notify: bool=True</code>, <code>indicate: bool=False</code></td><td><code>bool</code></td><td>ต้อง <code>connected=True</code> ก่อน</td></tr><tr><td><code>send_uart(text)</code></td><td>ส่งข้อความแบบ UART</td><td><code>text: str</code></td><td><code>bool</code></td><td>เรียก <code>send_data()</code></td></tr><tr><td><code>stop_advertising()</code></td><td>หยุดโฆษณา</td><td>—</td><td>—</td><td>—</td></tr><tr><td><code>disconnect()</code></td><td>ตัด client</td><td>—</td><td>—</td><td>async</td></tr><tr><td><code>stop()</code></td><td>ปิด BLE ทั้งหมด</td><td>—</td><td>—</td><td>async — เรียกตอนจบโปรแกรม</td></tr><tr><td><code>get_status()</code></td><td>ดูสถานะ</td><td>—</td><td><code>dict</code></td><td>—</td></tr></tbody></table></div>
+<h3>BLEUART</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>begin(baudrate)</code></td><td>เริ่ม BLE UART</td><td><code>baudrate</code> (มีไว้ compat เท่านั้น)</td><td><code>bool</code></td><td>async — เรียกก่อนอย่างอื่น</td></tr><tr><td><code>read()</code></td><td>อ่านข้อความที่ได้รับทั้งหมด</td><td>—</td><td><code>str</code> หรือ <code>None</code></td><td>ใช้กับ <code>any()</code></td></tr><tr><td><code>readline()</code></td><td>อ่านทีละบรรทัด</td><td>—</td><td><code>str</code> หรือ <code>None</code></td><td>ใช้กับ <code>any()</code></td></tr><tr><td><code>write(data)</code></td><td>ส่งข้อมูล</td><td><code>data: str/bytes</code></td><td>—</td><td>หลัง <code>begin()</code></td></tr><tr><td><code>println(text)</code></td><td>ส่งข้อความ+ขึ้นบรรทัดใหม่</td><td><code>text: str</code></td><td>—</td><td>wrapper ของ <code>write()</code></td></tr><tr><td><code>any()</code></td><td>เช็คว่ามีข้อความรออ่าน</td><td>—</td><td><code>bool</code></td><td>ก่อน <code>read()</code>/<code>readline()</code></td></tr><tr><td><code>stop()</code></td><td>หยุด</td><td>—</td><td>—</td><td>async</td></tr></tbody></table></div>
+<h3>BLESensor</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>begin()</code></td><td>เริ่ม sensor service</td><td>—</td><td><code>bool</code></td><td>async</td></tr><tr><td><code>update_sensor(**kwargs)</code></td><td>อัปเดตค่าเซ็นเซอร์</td><td><code>temperature=...</code>, <code>humidity=...</code></td><td>—</td><td>เรียกต่อเนื่องในลูป</td></tr><tr><td><code>get_sensor_data()</code></td><td>อ่านค่าล่าสุด</td><td>—</td><td><code>dict</code></td><td>—</td></tr><tr><td><code>start_streaming(interval)</code></td><td>ส่งค่าเซ็นเซอร์อัตโนมัติ</td><td><code>interval: int</code> (วินาที)</td><td>—</td><td>async — รันเป็น task แยก</td></tr><tr><td><code>stop_streaming()</code></td><td>หยุด streaming</td><td>—</td><td>—</td><td>ใช้คู่กับ <code>start_streaming()</code></td></tr><tr><td><code>stop()</code></td><td>ปิด service</td><td>—</td><td>—</td><td>async</td></tr></tbody></table></div>
+<h2>ตัวอย่างการใช้งาน</h2>
+<h3>🟢 พื้นฐาน — BLE UART echo</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from ble.blemanager import BLEUART
+
+uart = BLEUART(device_name=&quot;ESP32-UART&quot;)
+
+async def main():
+    await uart.begin()
+    print(&quot;📡 BLE UART พร้อมแล้ว — เปิดแอป Serial Terminal เชื่อมต่อเลย&quot;)
+
+    while True:
+        if uart.any():
+            data = uart.read()
+            print(f&quot;📥 ได้รับ: {data}&quot;)
+            uart.println(f&quot;Echo: {data}&quot;)
+        await asyncio.sleep(0.1)
+
+asyncio.run(main())</code></pre></div>
+<h3>🟡 ใช้งานจริง — ใช้ callback ตรวจจับเหตุการณ์</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from ble.blemanager import BLEManager
+
+def on_connect(conn_handle):
+    print(f&quot;✅ มีอุปกรณ์เชื่อมต่อ: {conn_handle}&quot;)
+
+def on_disconnect(conn_handle):
+    print(f&quot;❌ ขาดการเชื่อมต่อ: {conn_handle}&quot;)
+
+def on_write(conn_handle, value_handle, data):
+    print(f&quot;📥 Write: {data.decode(&#x27;utf-8&#x27;, errors=&#x27;ignore&#x27;)}&quot;)
+
+async def main():
+    ble = BLEManager(device_name=&quot;ESP32-CB&quot;)
+    ble.set_callback(&quot;on_connect&quot;, on_connect)
+    ble.set_callback(&quot;on_disconnect&quot;, on_disconnect)
+    ble.set_callback(&quot;on_write&quot;, on_write)
+
+    await ble.start_server()
+
+    try:
+        while True:
+            await asyncio.sleep(1)
+            if ble.connected:
+                ble.send_uart(&quot;สวัสดีจาก ESP32!&quot;)   # ส่งทุก 1 วินาที
+                await asyncio.sleep(5)
+    except KeyboardInterrupt:
+        await ble.stop()
+
+asyncio.run(main())</code></pre></div>
+<h3>🔴 ขั้นสูง — สตรีมค่าเซ็นเซอร์เป็น JSON</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from machine import Pin, ADC
+from ble.blemanager import BLESensor
+
+sensor = BLESensor(device_name=&quot;ESP32-Sensor&quot;)
+adc = ADC(Pin(0))
+adc.atten(ADC.ATTN_11DB)
+
+async def main():
+    await sensor.begin()
+    asyncio.create_task(sensor.start_streaming(interval=2))
+
+    while True:
+        sensor.update_sensor(
+            temperature=round(adc.read() * 0.1, 2),
+            humidity=round(adc.read() * 0.05, 2),
+            battery=85,
+        )
+        await asyncio.sleep(1)
+
+asyncio.run(main())</code></pre></div>
+<h2>การต่อวงจร</h2>
+<p>BLE เป็น wireless — ไม่ต้องต่อสายเพิ่ม</p>
+<h2>ข้อควรระวัง</h2>
+<ul><li><strong>โค้ดยังไม่สมบูรณ์ (TODO)</strong>: <code>_register_service()</code> ยังไม่ได้ลงทะเบียนกับ BLE stack จริง และ <code>send_data()</code> ใช้ <code>char_handle = 2</code> แบบ dummy — notify/indicate ยังไม่ผูกกับ characteristic จริง การทำงานบนมือถือบางแอปอาจไม่สมบูรณ์</li><li>ถ้า import <code>bluetooth</code> ไม่ได้ → ทำงานใน <strong>mock mode</strong> (<code>HAS_BLUETOOTH=False</code>) ทุกคำสั่งจะคืน False แต่ไม่ crash</li><li>ใช้กับแอปมือถือ: BLE Terminal / nRF Connect / Serial Bluetooth Terminal</li><li>ESP32 รองรับการเชื่อมต่อ peripheral ได้ครั้งละ 1–3 central ขึ้นกับ firmware</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>repl.ble_repl.BLERepl</code> — สร้าง REPL ผ่าน BLE UART (ใช้ <code>BLEUART</code> ภายใน)</li><li><code>sensors</code> — อ่านค่าจริงมาใส่ <code>update_sensor()</code> แทนค่า fake</li><li><code>storage.config_mgr.JsonConfigManager</code> — backend ของ config</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "../";</script>
+<script src="../assets/js/search-index.js"></script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

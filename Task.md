@@ -302,3 +302,26 @@ Test/
 | Telegram | 1 module (2 ทาง) | ✅ เสร็จแล้ว |
 | System | 5 utilities | ✅ เสร็จแล้ว |
 | **รวม** | **55 ไฟล์** | — |
+
+---
+
+## QA — การตรวจสอบคุณภาพโค้ด (Audit) — 2026-08-03
+
+> ดูรายละเอียดเต็มใน **[AUDIT_REPORT.md](AUDIT_REPORT.md)**
+
+- [x] Static review ทุกโมดูลใน `src/lib/` (95 โมดูล + 29 `__init__.py`)
+- [x] สร้าง mocks MicroPython รันบน CPython (`src/tests/mocks/`)
+- [x] เขียนเทสต์หน่วย 17 ไฟล์ — **384 เทสต์ผ่าน 100%** (0 expected failure)
+- [x] ซ่อม BUG ที่ยืนยันแล้ว **10 รายการ** (SyntaxError / NameError / ตรรกะผิด)
+- [x] Pyright: 80 → 65 errors (ที่เหลือเป็น type-safe `Optional` เท่านั้น)
+
+### วิธีรัน
+
+```powershell
+cd src/tests
+$env:PYTHONIOENCODING="utf-8"
+python run_tests.py          # "Ran 384 tests ... OK"
+
+cd src
+npx --yes pyright lib        # type check
+```

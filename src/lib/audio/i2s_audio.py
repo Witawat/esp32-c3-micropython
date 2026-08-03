@@ -128,9 +128,7 @@ class I2SAudio:
             ibuf=dma_buf_len,
         )
 
-        mode_labels = {MODE_TX: 'TX (Speaker)', MODE_RX: 'RX (Mic)', MODE_TXRX: 'TXRX (Full Duplex)'}
-        if HAS_I2S:
-            mode_labels = {self.MODE_TX: 'TX (Speaker)', self.MODE_RX: 'RX (Mic)', self.MODE_TXRX: 'TXRX (Full Duplex)'}
+        mode_labels = {self.MODE_TX: 'TX (Speaker)', self.MODE_RX: 'RX (Mic)', self.MODE_TXRX: 'TXRX (Full Duplex)'}
 
         print(f"🎵 I2S Audio เริ่มต้น — {mode_labels.get(mode_int, mode)}, "
               f"{sample_rate}Hz, {bits}-bit, "

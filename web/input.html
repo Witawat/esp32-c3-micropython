@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Input Devices — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="อุปกรณ์นำเข้าข้อมูล 5 ตัว — ปุ่มกด, Rotary Encoder, Matrix Keypad, Touch, Joystick">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link active" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🎮 Input</span><span>/</span><span>Input Devices</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>input</code> มีไดรเวอร์ <strong>5 ตัว</strong> สำหรับรับอินพุตจากผู้ใช้/สภาพแวดล้อม:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>อุปกรณ์</th><th>Interface</th></tr></thead><tbody><tr><td><code>button.py</code></td><td>ปุ่มกด (debounce + multi-click + pattern)</td><td>GPIO + IRQ</td></tr><tr><td><code>encoder.py</code></td><td>Rotary Encoder (KY-040)</td><td>GPIO + IRQ</td></tr><tr><td><code>keypad.py</code></td><td>Matrix Keypad 3x4 / 4x4</td><td>GPIO scan</td></tr><tr><td><code>touch.py</code></td><td>Capacitive Touch</td><td><code>machine.TouchPad</code></td></tr><tr><td><code>joystick.py</code></td><td>Joystick แกน X/Y + ปุ่ม</td><td>ADC + GPIO</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+from input.button import Button
+from input.encoder import RotaryEncoder</code></pre></div>
+<hr>
+<h2>Button — ปุ่มกด</h2>
+<p><code>Button(pin, pull="up", active_low=True, debounce_ms=50, long_press_threshold_ms=1000, click_window_ms=300, max_clicks=5)</code></p>
+<ul><li><code>pull</code>: <code>"up"</code> (default) / <code>"down"</code> / ไม่ใช้ pull</li><li><code>active_low</code>: ปุ่มต่อ GND (กด = LOW) เป็นค่า default</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>callback รับอะไร</th></tr></thead><tbody><tr><td><code>is_pressed</code> / <code>read()</code></td><td>อ่านสถานะทันที</td><td>—</td></tr><tr><td><code>on_press(cb)</code> / <code>on_release(cb)</code></td><td>กด / ปล่อย</td><td>—</td></tr><tr><td><code>on_long_press(cb, threshold_ms=None)</code></td><td>กดค้าง</td><td><code>duration_ms</code></td></tr><tr><td><code>on_multi_click(count, cb)</code></td><td>กดหลายครั้ง (2,3,4,5)</td><td><code>click_count</code></td></tr><tr><td><code>on_double_click(cb)</code> / <code>on_triple_click(cb)</code></td><td>ดับเบิล/ทริปเปิลคลิก</td><td>—</td></tr><tr><td><code>get_last_press_duration()</code></td><td>ระยะเวลากดล่าสุด</td><td><code>int</code> ms</td></tr><tr><td><code>register_pattern(name, pattern, cb)</code></td><td>รู้จักรูปแบบการกด</td><td><code>pattern_name</code></td></tr><tr><td><code>unregister_pattern(name)</code> / <code>clear_patterns()</code></td><td>จัดการ pattern</td><td>—</td></tr><tr><td><code>wait_press(poll_ms=20)</code> / <code>wait_release(poll_ms=20)</code> (async)</td><td>รอจนกด/ปล่อย</td><td><code>True</code></td></tr><tr><td><code>watch(interval_ms=30, on_press=None, on_release=None)</code> (async)</td><td>loop ตรวจตลอด</td><td>—</td></tr><tr><td><code>disable_irq()</code></td><td>ปิด IRQ</td><td>—</td></tr></tbody></table></div>
+<p><strong>PressPattern</strong> — กำหนดลำดับการกด (สั้น/ยาว): <code>PressPattern(durations, max_gap_ms=500)</code> โดย <code>durations</code> = <code>[(min_ms, max_ms), ...]</code></p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">btn = Button(pin=9)
+btn.on_long_press(lambda dur: print(f&quot;กดค้าง {dur}ms&quot;))
+btn.on_double_click(lambda c: print(&quot;ดับเบิลคลิก!&quot;))
+btn.watch(on_press=lambda: print(&quot;กด&quot;))</code></pre></div>
+<p>ข้อควรระวัง: multi-click ใช้ asyncio task ภายใน — ต้องมี event loop รันอยู่; callback ที่เป็น coroutine จะถูก <code>create_task</code> ให้อัตโนมัติ</p>
+<h2>RotaryEncoder — หมุนเข้ารหัส</h2>
+<p><code>RotaryEncoder(pin_a, pin_b, button_pin=None, pull=PULL_UP, min_val=None, max_val=None, step=1)</code></p>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>value</code></td><td>ค่าปัจจุบัน</td><td><code>int</code></td></tr><tr><td><code>direction</code></td><td>ทิศทางครั้งล่าสุด</td><td>1 (CW) / -1 (CCW)</td></tr><tr><td><code>set_value(value)</code> / <code>reset(value=0)</code></td><td>ตั้ง/รีเซ็ตค่า</td><td>—</td></tr><tr><td><code>on_change(callback)</code></td><td>เรียกเมื่อหมุน</td><td><code>callback(value, direction)</code></td></tr><tr><td><code>button_pressed</code></td><td>ปุ่มในตัว (ถ้าต่อ)</td><td><code>bool</code></td></tr><tr><td><code>disable_irq()</code></td><td>ปิด IRQ</td><td>—</td></tr></tbody></table></div>
+<p><code>min_val</code>/<code>max_val</code> จำกัดค่าให้อยู่ในช่วงอัตโนมัติ (clamp)</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">enc = RotaryEncoder(pin_a=4, pin_b=5, min_val=0, max_val=100)
+enc.on_change(lambda v, d: print(v))</code></pre></div>
+<p>ข้อควรระวัง: ถ้าไม่มี pull-up ภายนอก ควรใช้โมดูล KY-040 ที่มีตัวต้านทานในตัวแล้ว</p>
+<h2>MatrixKeypad — คีย์แพด 3x4 / 4x4</h2>
+<p><code>MatrixKeypad(row_pins, col_pins, keys=None, debounce_ms=120)</code></p>
+<ul><li>rows = GPIO output, cols = GPIO input (PULL_UP)</li><li><code>keys=None</code> → อัตโนมัติตามขนาด: 4x4 → <code>1 2 3 A / 4 5 6 B / 7 8 9 C / <em> 0 # D</code>, อื่น → 3x4 <code>1 2 3 / 4 5 6 / 7 8 9 / </em> 0 #</code></li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>get_key()</code></td><td>อ่านปุ่มเดียว (blocking + debounce)</td><td>key หรือ <code>None</code></td></tr><tr><td><code>scan()</code></td><td>scan รอบเดียว (เร็ว)</td><td>key หรือ <code>None</code></td></tr><tr><td><code>wait_key(interval_ms=30)</code> (async)</td><td>รอจนมีปุ่ม</td><td>key</td></tr><tr><td><code>watch(on_key, interval_ms=30)</code> (async)</td><td>loop ส่ง key ต่อเนื่อง</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">kpd = MatrixKeypad(row_pins=[12, 14, 27, 26], col_pins=[15, 13, 4, 2])
+await kpd.watch(lambda k: print(f&quot;กด {k}&quot;))</code></pre></div>
+<h2>TouchSensor — Touch Pad</h2>
+<p><code>TouchSensor(pin, threshold=None)</code> — ใช้ได้กับชิพที่มี <code>machine.TouchPad</code> ได้แก่ <strong>ESP32 / ESP32-S2 / ESP32-S3 / ESP32-C3</strong></p>
+<ul><li><strong>C3 ใช้ได้จริง</strong> — มี TOUCH0–4 (GPIO4–8) และ MicroPython มี <code>machine.TouchPad</code> (โค้ด docstring ระบุไม่รองรับ C3 ไว้ แต่โค้ดจริงตรวจแค่ <code>hasattr(machine, "TouchPad")</code> ซึ่ง C3 ผ่าน)</li><li><strong>ESP32-C6 ไม่รองรับ</strong> → C6 ไม่มี touch ฮาร์ดแวร์ <code>machine.TouchPad</code> ไม่มี → constructor <code>raise NotImplementedError</code></li><li>ใช้กับ pin ที่ไม่ใช่ touch channel → MicroPython จะ raise <code>ValueError</code></li></ul>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read_raw()</code></td><td>ค่า raw (ยิ่งสูง = ยิ่งไกล)</td><td><code>int</code></td></tr><tr><td><code>is_touched</code> / <code>read()</code></td><td>สัมผัสหรือไม่ (ค่า &lt; threshold)</td><td><code>bool</code></td></tr><tr><td><code>calibrate(samples=20)</code></td><td>ปรับ baseline ใหม่</td><td>baseline</td></tr><tr><td><code>set_threshold(v)</code></td><td>ตั้ง threshold</td><td>—</td></tr><tr><td><code>baseline</code> / <code>threshold</code> (property)</td><td>ค่าปัจจุบัน</td><td><code>int</code></td></tr></tbody></table></div>
+<p>ค่า baseline เก็บตอนสร้าง; threshold default = <code>baseline × 0.7</code></p>
+<h2>Joystick — แกน X/Y</h2>
+<p><code>Joystick(x_pin, y_pin, button_pin=None, invert_x=False, invert_y=False, deadzone=0.12)</code></p>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read_raw()</code></td><td>ค่า ADC ดิบ</td><td><code>(x, y)</code> 0–4095</td></tr><tr><td><code>read_norm()</code></td><td>ค่า normalized</td><td><code>(nx, ny)</code> ∈ -1.0..1.0 (มี deadzone)</td></tr><tr><td><code>direction()</code></td><td>ทิศทางรวม</td><td><code>"center"/"up"/"down"/"left"/"right"</code></td></tr><tr><td><code>button_pressed</code></td><td>ปุ่มในตัว</td><td><code>bool</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">joy = Joystick(x_pin=34, y_pin=35, button_pin=0)
+nx, ny = joy.read_norm()
+print(joy.direction())</code></pre></div>
+<p>ข้อควรระวัง: ใช้ ADC pin (ATTN_11DB) เท่านั้น; ค่าศูนย์กลางคือ 2048 — ถ้า joystick ไม่อยู่กลางจริง ใช้ <code>invert</code> หรือตั้งค่า deadzone เพิ่ม</p>
+<hr>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>output</code> — สั่งมอเตอร์/relay ตามอินพุต (เช่น ปุ่ม → DCMotor, joystick → Servo)</li><li><code>display</code> — แสดงสถานะ/เมนูจากปุ่มหรือ encoder</li><li><code>io_expander</code> — ขยายจำนวนปุ่มถ้า GPIO ไม่พอ</li><li><code>storage</code> — บันทึกค่าตั้งค่า (เช่น volume, ตำแหน่งล่าสุด)</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

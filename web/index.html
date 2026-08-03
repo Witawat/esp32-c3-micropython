@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ภาพรวม — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="คู่มือใช้งาน lib ครบทุกหมวด — การต่อวงจร แนวคิด และ API ของเฟรมเวิร์ก ESP32 MicroPython">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a></nav>
+    <article class="prose"><section class="hero"><h1>⚡ ESP32 MicroPython Framework</h1><p>คู่มือใช้งาน lib ครบทุกหมวด — การต่อวงจร แนวคิด และ API</p><p class="hero-sub">95+ โมดูล · 29 หมวดหมู่ · ใช้ร่วมกับตัวอย่างโค้ดจริงจาก <code>src/lib</code></p></section><p>ยินดีต้อนรับสู่คู่มือการใช้งาน <strong>ESP32 MicroPython Framework</strong> — ชุดไลบรารี (lib) สำหรับ ESP32 ทุกรุ่น (ESP32 / S2 / S3 / C3 / C6) ประกอบด้วยโมดูลสำเร็จรูปกว่า <strong>95 โมดูล</strong> ใน <strong>29 หมวด</strong> ครอบคลุมทุกฟังก์ชันสำหรับโปรเจกต์ IoT ตั้งแต่เซ็นเซอร์ จอแสดงผล การสื่อสาร ไปจนถึงระบบ Cloud และ Security</p>
+<h2>วิธีใช้คู่มือนี้</h2>
+<ul><li><strong>เริ่มต้นใช้งาน</strong> — วิธี deploy <code>lib/</code> ลงบอร์ดและตั้งค่า <code>sys.path</code></li><li><strong>หมวดแต่ละตัว</strong> — แต่ละหน้าอธิบายเป็น 8 ส่วนมาตรฐาน: แนวคิดการใช้งาน, การติดตั้ง/import, constructor, ตาราง API (รับ/ส่งอะไร ใช้กับ method ไหน), ตัวอย่างโค้ด 3 ระดับ, การต่อวงจร, ข้อควรระวัง และ lib ที่ต้องใช้ร่วมกัน</li><li><strong>ช่องค้นหา</strong> ที่มุมขวาบน ใช้ค้นหาหมวด / คลาส / method ได้ทั้งเว็บ</li><li>กดปุ่ม 🌙/☀️ เพื่อสลับธีมมืด/สว่าง</li></ul>
+<h2>หลักการสำคัญของเฟรมเวิร์ก</h2>
+<div class="table-wrap"><table><thead><tr><th>หลักการ</th><th>คำอธิบาย</th></tr></thead><tbody><tr><td>⚡ Async-First</td><td>โมดูลที่ทำงาน I/O รองรับ <code>async/await</code> — รันงานหลายอย่างพร้อมกัน</td></tr><tr><td>⚙️ Config-Driven</td><td>หลายโมดูลอ่านค่าเริ่มต้นจากไฟล์ JSON ผ่าน <code>storage.config_mgr</code></td></tr><tr><td>🛡️ Graceful Degradation</td><td>พลาด dependency ไม่แครช มี fallback เสมอ</td></tr><tr><td>🔌 Lazy Initialization</td><td>ฮาร์ดแวร์ถูกสร้างเมื่อเรียกใช้จริง คืนทรัพยากรด้วย <code>deinit()</code></td></tr><tr><td>📝 Emoji-Prefixed Log</td><td>สถานะการทำงานแสดงผลด้วย Emoji อ่านง่าย</td></tr></tbody></table></div>
+<h2>ลำดับการใช้งานที่แนะนำ</h2>
+<ol><li>เชื่อมต่อเน็ตเวิร์กด้วย <code>network</code> (WiFi / Ethernet)</li><li>อ่านค่าจาก <code>sensors</code></li><li>แสดงผลหรือสั่งงานผ่าน <code>display</code> / <code>output</code></li><li>ส่งข้อมูลด้วย <code>mqtt</code> / <code>http</code> / <code>cloud</code></li><li>บันทึกข้อมูลผ่าน <code>storage</code></li><li>ดูแลระบบด้วย <code>system</code></li></ol>
+<blockquote>หมายเหตุ: เอกสารในคู่มือนี้ <strong>อัปเดตจากโค้ดจริงใน <code>src/lib</code></strong> — บางหมวด README เดิมของ lib เขียน API ไว้ล่วงหน้าที่ไม่ตรงกับโค้ดจริง ข้อมูลในเว็บนี้จึงเป็นแหล่งอ้างอิงที่ตรงกับโค้ดที่สุด</blockquote><section class="category-grid"><a class="card" href="getting-started.html"><div class="card-icon">🚀</div><div class="card-body"><h3>🚀 เริ่มต้นใช้งาน</h3><p>วิธี deploy lib ลงบอร์ด ESP32 และตั้งค่า sys.path เพื่อ import ได้ทันที</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="network/wifi.html"><div class="card-icon">📡</div><div class="card-body"><h3>🌐 Network &amp; Communication</h3><p>จัดการ WiFi แบบ STA/AP + Config Portal — เชื่อมต่อ สแกน keep-alive และตั้งค่าผ่านเว็บ</p><span class="card-meta">8 หน้า</span></div></a>
+<a class="card" href="cloud.html"><div class="card-icon">☁️</div><div class="card-body"><h3>☁️ Cloud Platforms</h3><p>เชื่อมต่อ IoT Cloud — ThingsBoard, Adafruit IO, Blynk, Firebase RTDB และ AWS IoT</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="sensors.html"><div class="card-icon">📡</div><div class="card-body"><h3>🌡️ Sensors</h3><p>เซนเซอร์ 21 ตัว — อุณหภูมิ/ความชื้น, ระยะทาง, กระแสไฟฟ้า, คุณภาพอากาศ, ตำแหน่ง GPS, แบตเตอรี่</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="display.html"><div class="card-icon">🖥️</div><div class="card-body"><h3>🖥️ Display</h3><p>จอแสดงผล 7 ชนิด — OLED, TFT LCD, E-Paper, Character LCD, LED Matrix, และ TJC HMI</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="output.html"><div class="card-icon">⚙️</div><div class="card-body"><h3>⚙️ Output / Actuator</h3><p>อุปกรณ์เอาต์พุต 12 ตัว — มอเตอร์, Servo, Relay, LED, Buzzer, IR Remote</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="input.html"><div class="card-icon">🎛️</div><div class="card-body"><h3>🎮 Input</h3><p>อุปกรณ์นำเข้าข้อมูล 5 ตัว — ปุ่มกด, Rotary Encoder, Matrix Keypad, Touch, Joystick</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="p10.html"><div class="card-icon">🪧</div><div class="card-body"><h3>📺 P10 LED Panel</h3><p>บอร์ดจอ LED P10 (HUB75) — ขาวดำ, สี RGB, ต่อพ่วงหลายแผง</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="audio.html"><div class="card-icon">🎵</div><div class="card-body"><h3>🎵 Audio</h3><p>เล่นและบันทึกเสียงผ่าน I2S — ลำโพง MAX98357, ไมโครโฟน INMP441</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="io-expander.html"><div class="card-icon">🧩</div><div class="card-body"><h3>🔌 I/O Expander</h3><p>ขยายขา GPIO ผ่าน I2C — PCF8574 (8-bit), MCP23017 (16-bit), PCA9685 (PWM 16 ช่อง)</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="io-abstraction.html"><div class="card-icon">🔧</div><div class="card-body"><h3>🔧 I/O Abstraction</h3><p>ชั้น abstraction ของ GPIO พื้นฐาน — pin, pwm, adc, dac, i2c, spi, uart, timer</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="storage.html"><div class="card-icon">💾</div><div class="card-body"><h3>💾 Storage</h3><p>จัดการข้อมูลคงอยู่ — JSON config, file logger, microSD card</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="system.html"><div class="card-icon">🔋</div><div class="card-body"><h3>🔋 System Utilities</h3><p>เครื่องมือระดับระบบ — deep sleep, OTA, RTC/NTP, ดูข้อมูลระบบ, watchdog</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="security.html"><div class="card-icon">🔐</div><div class="card-body"><h3>🔐 Security</h3><p>รักษาความปลอดภัยอุปกรณ์ — เก็บ secret แบบเข้ารหัส, token auth, ล็อก REPL, audit log</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="crypto.html"><div class="card-icon">🔑</div><div class="card-body"><h3>🔑 Crypto</h3><p>การเข้ารหัส/แฮช — SHA-256/512, HMAC, PBKDF2, base64/hex, TLS/SSL</p><span class="card-meta">1 หน้า</span></div></a>
+<a class="card" href="repl.html"><div class="card-icon">🛠️</div><div class="card-body"><h3>🛠️ REPL</h3><p>สร้าง REPL/CLI ของตัวเอง — command dispatcher, TCP, UART, BLE, WebREPL</p><span class="card-meta">1 หน้า</span></div></a></section></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

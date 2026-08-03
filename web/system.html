@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System Utilities — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="เครื่องมือระดับระบบ — deep sleep, OTA, RTC/NTP, ดูข้อมูลระบบ, watchdog">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link active" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🔋 System Utilities</span><span>/</span><span>System Utilities</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>system</code> มีตัวช่วยจัดการระดับระบบ <strong>5 ตัว</strong>:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>คลาส</th><th>ใช้ทำอะไร</th></tr></thead><tbody><tr><td><code>deepsleep.py</code></td><td><code>DeepSleepManager</code></td><td>เข้า deep sleep + ตั้งสาเหตุปลุก</td></tr><tr><td><code>ota.py</code></td><td><code>OTAUpdater</code></td><td>ดาวน์โหลด firmware ใหม่ (OTA)</td></tr><tr><td><code>rtc.py</code></td><td><code>DS3231</code>, <code>RTCManager</code>, <code>RTCFactory</code>, <code>NTPTimeSync</code></td><td>เวลาจริง (ในตัว + DS3231 + sync NTP)</td></tr><tr><td><code>sysinfo.py</code></td><td><code>SysInfo</code></td><td>ดู CPU/RAM/flash/ID เครื่อง</td></tr><tr><td><code>watchdog.py</code></td><td><code>WatchdogManager</code></td><td>รีเซ็ตอัตโนมัติเมื่อโปรแกรมค้าง</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)</code></pre></div>
+<hr>
+<h2>DeepSleepManager — ประหยัดพลังงาน</h2>
+<p>class นี้เป็น static ทั้งหมด (ไม่ต้องสร้าง instance):</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>sleep_ms(ms)</code></td><td>เข้า deep sleep ตามเวลาที่กำหนด (ปลุกเองเมื่อครบ)</td></tr><tr><td><code>sleep_forever()</code></td><td>เข้า deep sleep ตลอด (ปลุกด้วย external เท่านั้น)</td></tr><tr><td><code>reset_cause()</code></td><td>ดูสาเหตุการรีเซ็ตครั้งล่าสุด</td></tr><tr><td><code>wake_reason()</code></td><td>ดูสาเหตุการปลุก (ถ้า platform รองรับ)</td></tr><tr><td><code>pin_wake(pin_num, trigger=WAKEUP_ANY_HIGH)</code></td><td>ตั้งปลุกด้วย GPIO (ต้องเรียกก่อน <code>sleep_*</code>)</td></tr><tr><td><code>touch_wake(touchpad)</code></td><td>ตั้งปลุกด้วย touch pad (ถ้ารองรับ)</td></tr></tbody></table></div>
+<p><strong>สำคัญ:</strong> ต้องตั้ง wake source (เช่น <code>pin_wake</code>) <strong>ก่อน</strong>เรียก <code>sleep_ms()</code>/<code>sleep_forever()</code> ไม่งั้นเครื่องจะปลุกไม่ได้</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from system.deepsleep import DeepSleepManager
+
+DeepSleepManager.pin_wake(9, machine.WAKEUP_ANY_HIGH)   # ปลุกเมื่อ GPIO9 สูง
+DeepSleepManager.sleep_ms(10 * 60 * 1000)                # นอน 10 นาที
+print(&quot;ตื่นแล้ว —&quot;, DeepSleepManager.wake_reason())</code></pre></div>
+<h2>OTAUpdater — อัปเดต firmware ผ่าน WiFi</h2>
+<p><code>OTAUpdater(firmware_url=None, download_path='/update.bin')</code> — <strong>ดาวน์โหลด firmware ลงแฟลชเท่านั้น ไม่ได้แฟลชเอง</strong> ต้องมี bootloader/partition strategy ที่รองรับ OTA</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>set_url(url)</code></td><td>ตั้ง URL firmware</td><td>—</td></tr><tr><td><code>download(url=None, chunk_size=1024)</code></td><td>ดาวน์โหลดไฟล์ลง <code>download_path</code> (ใช้ <code>urequests</code>)</td><td><code>int</code> (bytes)</td></tr><tr><td><code>verify_min_size(min_bytes=64*1024)</code></td><td>ตรวจว่าไฟล์ใหญ่พอ (กันไฟล์ไม่สมบูรณ์)</td><td><code>bool</code></td></tr><tr><td><code>schedule_install_notice()</code></td><td>พิมพ์คำแนะนำการติดตั้ง</td><td>—</td></tr><tr><td><code>reboot(delay_ms=500)</code></td><td>รอแล้วรีบูต (static)</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from system.ota import OTAUpdater
+
+ota = OTAUpdater(&#x27;http://192.168.1.10/firmware.bin&#x27;)
+size = ota.download()
+if ota.verify_min_size():
+    ota.schedule_install_notice()
+    ota.reboot()</code></pre></div>
+<h2>rtc — เวลาจริง + NTP</h2>
+<h3>DS3231 (external RTC ผ่าน I2C)</h3>
+<p><code>DS3231(sda=21, scl=22, address=0x68, i2c=None)</code> — ถ้ามี <code>i2c</code> instance อยู่แล้วส่งเข้าไปได้ (ไม่ต้องต่อ pin ใหม่)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>datetime()</code></td><td>อ่านเวลา → tuple <code>(year, month, day, weekday, hour, minute, second, 0)</code></td></tr><tr><td><code>set_datetime(dt)</code></td><td>ตั้งเวลา (แปลงเป็น BCD ให้อัตโนมัติ)</td></tr></tbody></table></div>
+<h3>RTCManager</h3>
+<p><code>RTCManager()</code> — จัดการ <code>machine.RTC</code> ในตัว (+ ต่อ DS3231 เป็น external ได้)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>set_external_rtc(ds)</code></td><td>ต่อ DS3231 + sync เวลาเข้าเครื่องทันที</td></tr><tr><td><code>get_datetime()</code> / <code>set_datetime(dt)</code></td><td>อ่าน/ตั้งเวลาจาก <code>machine.RTC</code></td></tr><tr><td><code>sync_ntp(timezone_offset_hours=7)</code></td><td>Sync เวลาจาก NTP แล้วปรับ timezone (default UTC+7)</td></tr><tr><td><code>sync_to_ds3231(ds)</code></td><td>เขียนเวลาปัจจุบันลง DS3231</td></tr><tr><td><code>sync_from_ds3231(ds)</code></td><td>อ่านจาก DS3231 มาเข้าเครื่อง</td></tr></tbody></table></div>
+<h3>RTCFactory</h3>
+<p>เลือก source RTC ให้อัตโนมัติ (DS3231 ถ้าเจอ → fallback เป็น built-in):</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from system.rtc import RTCFactory, NTPTimeSync
+
+rtc = RTCFactory.create(sda=21, scl=22)     # auto-detect DS3231
+ntp = NTPTimeSync(rtc, timezone_offset=7)
+ntp.sync(retries=3)
+print(rtc.get_datetime())</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>create(sda=21, scl=22, ds3231_addr=0x68, i2c=None)</code></td><td>auto-detect (ตรวจ sanity ปี ≥ 2020) → <code>RTCManager</code></td></tr><tr><td><code>create_default()</code></td><td>ใช้ built-in อย่างเดียว (ไม่ scan I2C)</td></tr></tbody></table></div>
+<h3>NTPTimeSync</h3>
+<p><code>NTPTimeSync(rtc_manager, timezone_offset=7)</code> — sync ทั้ง built-in RTC และ DS3231 (ถ้ามี) จาก NTP</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>sync(retries=3)</code></td><td>Sync (ต้องต่อ WiFi ก่อน), คืน <code>True/False</code></td></tr><tr><td><code>get_last_sync_time()</code></td><td>เวลาล่าสุดที่ sync</td></tr></tbody></table></div>
+<p><strong>หมายเหตุ:</strong> <code>ntptime</code> ต้องอยู่ใน firmware; ถ้าไม่มี lib นี้จะคืน <code>False</code> และแนะนำให้ใช้ WiFi manager sync แทน</p>
+<h2>SysInfo — ดูข้อมูลระบบ</h2>
+<p>class static ทั้งหมด:</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>คืนค่า</th></tr></thead><tbody><tr><td><code>cpu_freq_hz()</code></td><td>ความถี่ CPU</td><td><code>int</code> Hz</td></tr><tr><td><code>chip_id_hex()</code></td><td>ID เฉพาะเครื่อง (จาก <code>unique_id</code>)</td><td><code>str</code> hex</td></tr><tr><td><code>reset_cause()</code> / <code>wake_reason()</code></td><td>สาเหตุรีเซ็ต/ปลุก</td><td><code>int</code> / —</td></tr><tr><td><code>mem_free()</code> / <code>mem_alloc()</code></td><td>RAM ว่าง/ใช้แล้ว (เรียก <code>gc.collect()</code> ก่อน)</td><td><code>int</code> bytes</td></tr><tr><td><code>fs_usage(path='/')</code></td><td>เนื้อที่ไฟล์ระบบ</td><td><code>dict</code> {total, used, free}</td></tr><tr><td><code>all()</code></td><td>สรุปรวมทุกอย่างเป็น <code>dict</code></td><td><code>dict</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from system.sysinfo import SysInfo
+
+info = SysInfo.all()
+print(info[&#x27;chip_id&#x27;], info[&#x27;mem_free&#x27;], info[&#x27;fs&#x27;])</code></pre></div>
+<h2>WatchdogManager — รีเซ็ตอัตโนมัติเมื่อค้าง</h2>
+<p><code>WatchdogManager(timeout_ms=8000, auto_feed=False, feed_interval_ms=1000)</code> — ถ้าไม่ <code>feed()</code> ภายใน <code>timeout_ms</code> ระบบจะรีเซ็ต (กันโปรแกรมค้างตาย)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>feed()</code></td><td>บอกว่า "ยังทำงานปกติ" (ต้องเรียกเป็นระยะสม่ำเสมอ)</td></tr><tr><td><code>start_auto_feed()</code></td><td>feed อัตโนมัติทุก <code>feed_interval_ms</code> ใน thread/loop (blocking — ต้องคอยเท่าที่ <code>_running</code> เป็นจริง)</td></tr><tr><td><code>stop_auto_feed()</code></td><td>หยุด auto-feed</td></tr><tr><td><code>run_guarded(func, *args)</code></td><td>รัน func แล้ว feed; ถ้า func โยน exception <strong>จะไม่ feed</strong> → WDT รีเซ็ต (fail-safe)</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from system.watchdog import WatchdogManager
+
+wdt = WatchdogManager(timeout_ms=8000)
+while True:
+    wdt.feed()          # ทำใน main loop
+    # ... ทำงาน ...</code></pre></div>
+<p><strong>คำแนะนำ:</strong> ใช้ <code>feed()</code> มือใน main loop ดีกว่า <code>start_auto_feed()</code> เพราะ auto-feed ยากที่จะกัน "loop ที่ทำงานผิดปกติแต่ยัง feed ทัน" ได้</p>
+<hr>
+<h2>สรุปการเลือกใช้</h2>
+<ul><li><strong>ประหยัดไฟ:</strong> <code>DeepSleepManager</code></li><li><strong>อัปเดต firmware:</strong> <code>OTAUpdater</code></li><li><strong>เวลาแม่นยำ:</strong> <code>RTCFactory</code> + <code>NTPTimeSync</code></li><li><strong>ดีบัก/ตรวจสอบ:</strong> <code>SysInfo</code></li><li><strong>กันโปรแกรมค้าง:</strong> <code>WatchdogManager</code></li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>network</code> — ต้องมี WiFi ก่อน <code>sync_ntp()</code> / <code>OTAUpdater.download()</code></li><li><code>storage</code> — เขียน log/config หลังตื่นจาก sleep หรือหลัง OTA</li><li><code>security</code> — lock REPL หลัง deploy production</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

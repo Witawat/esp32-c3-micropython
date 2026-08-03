@@ -7,6 +7,7 @@
   <img src="https://img.shields.io/badge/ESP32--C6-✓-brightgreen" alt="ESP32-C6">
   <img src="https://img.shields.io/badge/Python-3.x-blue?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
+  <img src="https://img.shields.io/badge/tests-384%20passed-brightgreen" alt="Tests: 384 passed">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome">
 </p>
 
@@ -14,7 +15,7 @@
 
 <p align="center">
   <b>เฟรมเวิร์ก MicroPython แบบ Async-First สำหรับ ESP32<br>
-  ครบทุกฟังก์ชัน IoT — 88+ โมดูล พร้อมใช้งาน</b>
+  ครบทุกฟังก์ชัน IoT — 95 โมดูล พร้อมใช้งาน</b>
 </p>
 
 <p align="center">
@@ -29,7 +30,7 @@
 
 ## 📖 ภาพรวม
 
-**ESP32 MicroPython Framework** คือชุดไลบรารี MicroPython แบบ Async-First ที่ออกแบบมาให้ทำงานบน ESP32 ทุกรุ่น (ESP32 / S2 / S3 / C3 / C6) ประกอบด้วยโมดูลสำเร็จรูปกว่า **89 โมดูล** ใน **17 หมวดหมู่** ครอบคลุมทุกฟังก์ชันที่จำเป็นสำหรับโปรเจกต์ IoT
+**ESP32 MicroPython Framework** คือชุดไลบรารี MicroPython แบบ Async-First ที่ออกแบบมาให้ทำงานบน ESP32 ทุกรุ่น (ESP32 / S2 / S3 / C3 / C6) ประกอบด้วยโมดูลสำเร็จรูปกว่า **95 โมดูล** ใน **29 หมวดหมู่** ครอบคลุมทุกฟังก์ชันที่จำเป็นสำหรับโปรเจกต์ IoT
 
 ```python
 import asyncio
@@ -54,7 +55,7 @@ asyncio.run(main())
 | คุณสมบัติ | รายละเอียด |
 |-----------|-----------|
 | ⚡ **Async-First** | ทุกโมดูลที่ทำงาน I/O ใช้ `async/await` — รันงานพร้อมกันได้หลายอย่าง |
-| 🧩 **89+ โมดูล** | ครบทุกฟังก์ชัน ตั้งแต่ Sensor, Display, Network, Cloud, Security |
+| 🧩 **95+ โมดูล** | ครบทุกฟังก์ชัน ตั้งแต่ Sensor, Display, Network, Cloud, Security |
 | ⚙️ **Config-Driven** | ทุกโมดูลรองรับ JSON Config — เปลี่ยนพฤติกรรมได้โดยไม่แก้โค้ด |
 | 🛡️ **Graceful Degradation** | พลาด dependency ไม่แครช — มี fallback เสมอ |
 | 🔌 **Lazy Initialization** | สร้าง Hardware เมื่อเรียกใช้จริง — คืนทรัพยากรด้วย `deinit()` |

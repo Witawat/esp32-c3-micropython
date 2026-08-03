@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audio (I2S) — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="เล่นและบันทึกเสียงผ่าน I2S — ลำโพง MAX98357, ไมโครโฟน INMP441">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link active" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🎵 Audio</span><span>/</span><span>Audio (I2S)</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>audio</code> มีไดรเวอร์เดียว: <strong><code>I2SAudio</code></strong> — เล่น/บันทึกเสียงดิจิทัล (PCM) ผ่าน I2S bus</p>
+<div class="table-wrap"><table><thead><tr><th>โหมด</th><th>ใช้กับ</th><th>อุปกรณ์</th></tr></thead><tbody><tr><td><code>'tx'</code></td><td>เล่นเสียง → ลำโพง</td><td>I2S DAC เช่น MAX98357</td></tr><tr><td><code>'rx'</code></td><td>บันทึกเสียง ← ไมโครโฟน</td><td>I2S MEMS mic เช่น INMP441</td></tr><tr><td><code>'txrx'</code></td><td>Full duplex (พร้อมกัน)</td><td>ทั้งสอง</td></tr></tbody></table></div>
+<p>ESP32-C3 มี <strong>I2S0 เพียง bus เดียว</strong> และ DMA buffer ใช้ RAM ~10–50KB ระวังเรื่องหน่วยความจำ</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+from audio.i2s_audio import I2SAudio</code></pre></div>
+<h2>Constructor</h2>
+<p><code>I2SAudio(sck, ws, sd, mode='tx', sample_rate=16000, bits=16, channels=1, dma_buf_len=256, i2s_id=0)</code></p>
+<div class="table-wrap"><table><thead><tr><th>parameter</th><th>ค่าที่รับ</th></tr></thead><tbody><tr><td><code>sck</code></td><td>GPIO Serial Clock (BCLK)</td></tr><tr><td><code>ws</code></td><td>GPIO Word Select (LRC)</td></tr><tr><td><code>sd</code></td><td>GPIO Serial Data (DIN สำหรับ TX, DOUT สำหรับ RX)</td></tr><tr><td><code>mode</code></td><td><code>'tx'</code> / <code>'rx'</code> / <code>'txrx'</code></td></tr><tr><td><code>sample_rate</code></td><td>8000, 11025, 16000, 22050, 44100, 48000 Hz</td></tr><tr><td><code>bits</code></td><td>16 หรือ 32</td></tr><tr><td><code>channels</code></td><td>1=mono, 2=stereo</td></tr><tr><td><code>dma_buf_len</code></td><td>ขนาด DMA buffer (samples)</td></tr><tr><td><code>i2s_id</code></td><td>bus id (C3 = 0 เท่านั้น)</td></tr></tbody></table></div>
+<p><code>mode</code> ไม่ถูกต้อง → <code>ValueError</code>; บอร์ดไม่มี <code>machine.I2S</code> → <code>RuntimeError</code></p>
+<h2>การเล่นเสียง (TX)</h2>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>write(data)</code></td><td>เล่น PCM bytes</td><td>16-bit mono = 2 bytes/sample, stereo = 4 bytes (L,R สลับ)</td></tr><tr><td><code>volume</code> (property, set)</td><td>ตั้งความดัง 0–100</td><td><code>int</code>; <code>0</code> → mute อัตโนมัติ</td></tr><tr><td><code>mute()</code> / <code>unmute()</code> / <code>toggle_mute()</code></td><td>ควบคุมเสียง</td><td>—</td></tr><tr><td><code>is_muted</code> / <code>is_playing</code> (property)</td><td>สถานะ</td><td><code>bool</code></td></tr><tr><td><code>sample_rate</code> (property, set)</td><td>เปลี่ยน sample rate ระหว่างรัน</td><td><code>int</code></td></tr><tr><td><code>deinit()</code></td><td>ปิด I2S คืน RAM</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">audio = I2SAudio(sck=10, ws=9, sd=8, mode=&#x27;tx&#x27;)
+audio.volume = 80
+audio.write(wav_data)   # 16-bit mono 16kHz
+audio.deinit()</code></pre></div>
+<p>Volume scaling ทำงานเฉพาะ 16-bit; <code>write()</code> จะ <code>RuntimeError</code> ถ้า mode ไม่ใช่ TX/TXRX</p>
+<h2>การบันทึกเสียง (RX)</h2>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read(num_samples)</code></td><td>อ่าน samples</td><td><code>bytes</code> (PCM)</td></tr><tr><td><code>read_into(buffer)</code></td><td>อ่านลง buffer (zero-copy)</td><td><code>int</code> จำนวน bytes</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">mic = I2SAudio(sck=10, ws=9, sd=8, mode=&#x27;rx&#x27;)
+samples = mic.read(1600)   # 100ms @ 16kHz</code></pre></div>
+<p><code>read(num_samples)</code> → จำนวน bytes = <code>num_samples × (bits//8) × channels</code></p>
+<h2>การต่อวงจร</h2>
+<p><strong>MAX98357 (ลำโพง I2S):</strong></p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">ESP32-C3          MAX98357
+─────────         ────────
+SCK (BCLK)  ──→   BCLK
+WS (LRC)    ──→   LRC
+SD (DIN)    ──→   DIN
+3.3V        ──→   VIN
+GND         ───   GND
+GAIN        ───   GND=3dB / NC=6dB / VDD=9/12/15dB
+SD_MODE     ──→   3.3V (normal) / GND (shutdown)</code></pre></div>
+<p><strong>INMP441 (ไมโครโฟน I2S):</strong></p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">ESP32-C3          INMP441
+─────────         ───────
+SCK (BCLK)  ──→   SCK
+WS (LRC)    ──→   WS
+SD (DOUT)   ←──   SD
+L/R         ──→   GND (left) / 3.3V (right)
+3.3V        ──→   VDD
+GND         ───   GND</code></pre></div>
+<h2>ข้อควรระวัง</h2>
+<ul><li>ตรวจว่า firmware มี <code>machine.I2S</code> (MicroPython สำหรับ ESP32 ปกติมี)</li><li>DMA buffer + data ที่เขียนต้องไม่ใหญ่เกิน RAM ที่เหลือ — เช็ค <code>gc.mem_free()</code> ก่อนเล่นไฟล์ยาว</li><li>สำหรับ WAV ขนาดใหญ่ ควรเล่นแบบ chunk (อ่านทีละ ~4KB แล้ว <code>write</code>) แทนโหลดทั้งไฟล์</li><li><code>is_playing</code> จะเป็น <code>False</code> เมื่อ muted เท่านั้น — ไม่ได้บอกว่า I2S เล่นเสร็จหรือยัง</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>storage</code> — อ่านไฟล์ WAV จากระบบไฟล์แล้วเล่น</li><li><code>http</code> — สตรีมเสียง/ดาวน์โหลดไฟล์เสียง</li><li><code>input</code> — ปุ่มควบคุมเล่น/หยุด/ระดับเสียง</li><li><code>output.buzzer</code> — สำหรับเสียงเตือนง่ายๆ ไม่ต้องใช้ I2S</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

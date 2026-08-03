@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cloud Platforms — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="เชื่อมต่อ IoT Cloud — ThingsBoard, Adafruit IO, Blynk, Firebase RTDB และ AWS IoT">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link active" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>☁️ Cloud Platforms</span><span>/</span><span>Cloud Platforms</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>cloud</code> เป็น wrapper เชื่อม ESP32 เข้ากับ <strong>แพลตฟอร์ม IoT Cloud</strong> 5 รายการ เพื่อส่งข้อมูล (telemetry/feed) และรับคำสั่งผ่าน dashboard บนเว็บ/มือถือ:</p>
+<div class="table-wrap"><table><thead><tr><th>แพลตฟอร์ม</th><th>คลาส</th><th>Protocol</th></tr></thead><tbody><tr><td>ThingsBoard</td><td><code>ThingsBoardClient</code></td><td>MQTT</td></tr><tr><td>Adafruit IO</td><td><code>AdafruitIOClient</code></td><td>MQTT + REST</td></tr><tr><td>Blynk</td><td><code>BlynkClient</code></td><td>HTTP (REST)</td></tr><tr><td>Firebase RTDB</td><td><code>FirebaseRTDB</code></td><td>REST (HTTPS)</td></tr><tr><td>AWS IoT Core</td><td><code>AWSIoTClient</code></td><td>MQTT + TLS</td></tr></tbody></table></div>
+<p>แนวคิดหลัก: ทุกตัวสร้าง wrapper รอบ lib พื้นฐาน (<code>mqtt</code>/<code>http</code>) — เลือกใช้ตัวที่ตรงกับแพลตฟอร์มที่คุณใช้ ต้องต่อ WiFi ก่อนเสมอ และต้องมี credentials (token/key) จากแต่ละแพลตฟอร์ม</p>
+<h2>การติดตั้ง / import</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from cloud.thingsboard import ThingsBoardClient
+from cloud.adafruit_io import AdafruitIOClient
+from cloud.blynk import BlynkClient
+from cloud.firebase import FirebaseRTDB
+from cloud.aws_iot import AWSIoTClient</code></pre></div>
+<h2>ThingsBoard — <code>ThingsBoardClient</code></h2>
+<p><code>ThingsBoardClient(host, access_token, port=1883, device_name="esp32")</code></p>
+<ul><li>ใช้ <code>access_token</code> เป็น MQTT username</li><li>สร้าง <code>MQTTManager</code> ภายใน (ใช้ <code>self.mqtt</code> ได้โดยตรง)</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ใช้รวมกับ</th></tr></thead><tbody><tr><td><code>connect()</code></td><td>เริ่มต้น</td><td>—</td><td><code>bool</code></td><td>ก่อนส่งข้อมูล</td></tr><tr><td><code>disconnect()</code></td><td>จบงาน</td><td>—</td><td>—</td><td>—</td></tr><tr><td><code>send_telemetry(data)</code></td><td>ส่งข้อมูลเวลา (แสดงเป็น chart)</td><td><code>dict</code> เช่น <code>{"temperature": 25.5}</code></td><td><code>bool</code></td><td>publish ไป <code>v1/devices/me/telemetry</code> qos=1</td></tr><tr><td><code>send_attributes(data)</code></td><td>ส่งค่า config/device</td><td><code>dict</code></td><td><code>bool</code></td><td>publish ไป <code>.../attributes</code></td></tr><tr><td><code>on_rpc(callback)</code></td><td>รับคำสั่งจาก dashboard (RPC)</td><td><code>callback(topic, json)</code></td><td>—</td><td>subscribe <code>.../rpc/request/+</code></td></tr><tr><td><code>loop_forever()</code></td><td>รักษา connection</td><td>—</td><td>บล็อก</td><td>ใช้ในลูปหลัก</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">tb = ThingsBoardClient(host=&quot;demo.thingsboard.io&quot;, access_token=&quot;TOKEN&quot;)
+if tb.connect():
+    tb.send_telemetry({&quot;temperature&quot;: 25.5, &quot;humidity&quot;: 60.0})</code></pre></div>
+<h2>Adafruit IO — <code>AdafruitIOClient</code></h2>
+<p><code>AdafruitIOClient(username, aio_key, broker="io.adafruit.com", port=1883)</code></p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ใช้รวมกับ</th></tr></thead><tbody><tr><td><code>mqtt_connect()</code></td><td>เชื่อมต่อ MQTT</td><td>—</td><td><code>bool</code></td><td>ก่อน <code>mqtt_publish</code></td></tr><tr><td><code>mqtt_publish(feed, value)</code></td><td>ส่งค่าแบบเรียลไทม์</td><td><code>feed: str</code>, <code>value</code></td><td><code>bool</code></td><td>topic = <code>username/feeds/feed</code></td></tr><tr><td><code>mqtt_subscribe(feed, callback)</code></td><td>รับคำสั่งไป feed</td><td><code>feed</code>, <code>callback(t, m)</code></td><td>—</td><td>ต้อง <code>mqtt_connect()</code> ก่อน</td></tr><tr><td><code>rest_publish(feed, value)</code></td><td>ส่งค่าผ่าน REST API</td><td><code>feed</code>, <code>value</code></td><td><code>bool</code></td><td>ใช้ <code>X-AIO-Key</code> header</td></tr><tr><td><code>rest_get_last(feed)</code></td><td>อ่านค่าล่าสุด</td><td><code>feed</code></td><td><code>dict</code> หรือ <code>None</code></td><td>ใช้เช็คสถานะ</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">aio = AdafruitIOClient(username=&quot;myuser&quot;, aio_key=&quot;AIO_KEY&quot;)
+if aio.mqtt_connect():
+    aio.mqtt_publish(&quot;temperature&quot;, 25.5)</code></pre></div>
+<h2>Blynk — <code>BlynkClient</code></h2>
+<p><code>BlynkClient(auth_token, server="blynk.cloud")</code></p>
+<ul><li>ใช้ HTTP API อย่างเดียว (ไม่ใช่ hardware realtime ของ Blynk)</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ใช้รวมกับ</th></tr></thead><tbody><tr><td><code>virtual_write(pin, value)</code></td><td>เขียนค่าไป virtual pin</td><td><code>pin</code>, <code>value</code></td><td><code>bool</code></td><td>ส่งข้อมูลไป dashboard</td></tr><tr><td><code>virtual_read(pin)</code></td><td>อ่านค่าจาก virtual pin</td><td><code>pin</code></td><td><code>str</code> หรือ <code>None</code></td><td>ใช้กับ value จาก app</td></tr><tr><td><code>is_hardware_connected()</code></td><td>เช็คว่า app ต่ออยู่</td><td>—</td><td><code>bool</code></td><td>monitor</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">blynk = BlynkClient(auth_token=&quot;TOKEN&quot;)
+blynk.virtual_write(&quot;V0&quot;, 25.5)</code></pre></div>
+<h2>Firebase RTDB — <code>FirebaseRTDB</code></h2>
+<p><code>FirebaseRTDB(database_url, auth_token=None)</code></p>
+<ul><li>ใช้ legacy auth (<code>?auth=...</code>) — README เตือนว่า deprecated แนะนำเปลี่ยนเป็น ID token ใหม่</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ใช้รวมกับ</th></tr></thead><tbody><tr><td><code>get(path)</code></td><td>อ่านข้อมูล</td><td><code>path</code></td><td><code>dict</code> หรือ <code>None</code></td><td>—</td></tr><tr><td><code>set(path, value)</code></td><td>เขียนทับ (PUT)</td><td><code>path</code>, <code>value</code></td><td><code>bool</code></td><td>—</td></tr><tr><td><code>update(path, patch)</code></td><td>merge บาง field (PATCH)</td><td><code>path</code>, <code>patch: dict</code></td><td><code>bool</code></td><td>เหมาะอัปเดตบางค่า</td></tr><tr><td><code>delete(path)</code></td><td>ลบข้อมูล</td><td><code>path</code></td><td><code>bool</code></td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">fb = FirebaseRTDB(&quot;https://myapp-default-rtdb.firebaseio.com&quot;, auth_token=&quot;TOKEN&quot;)
+fb.set(&quot;devices/esp32/temp&quot;, 25.5)
+fb.update(&quot;devices/esp32&quot;, {&quot;hum&quot;: 60})</code></pre></div>
+<h2>AWS IoT Core — <code>AWSIoTClient</code></h2>
+<p><code>AWSIoTClient(endpoint, client_id, ca_cert=None, cert=None, key=None, port=8883)</code></p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ใช้รวมกับ</th></tr></thead><tbody><tr><td><code>connect()</code></td><td>เชื่อมต่อ TLS</td><td>—</td><td><code>bool</code></td><td>ก่อน publish/subscribe</td></tr><tr><td><code>disconnect()</code></td><td>จบงาน</td><td>—</td><td>—</td><td>—</td></tr><tr><td><code>publish(topic, payload, qos)</code></td><td>ส่งข้อมูล</td><td><code>topic</code>, <code>payload</code>, <code>qos=0</code></td><td><code>bool</code></td><td>—</td></tr><tr><td><code>subscribe(topic, callback, qos)</code></td><td>รับข้อมูล</td><td><code>topic</code>, <code>callback(msg)</code>, <code>qos=0</code></td><td><code>bool</code></td><td>ตั้ง <code>set_callback</code> ภายใน</td></tr><tr><td><code>check_msg()</code></td><td>เช็คข้อความ</td><td>—</td><td>—</td><td>เรียกในลูป</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">aws = AWSIoTClient(
+    endpoint=&quot;abcd-ats.iot.ap-southeast-1.amazonaws.com&quot;,
+    client_id=&quot;esp32-01&quot;,
+    ca_cert=&quot;/certs/amazon.pem&quot;, cert=&quot;/certs/cert.pem&quot;, key=&quot;/certs/private.key&quot;,
+)
+if aws.connect():
+    aws.publish(&quot;device/esp32/data&quot;, &#x27;{&quot;temp&quot;: 25.5}&#x27;)</code></pre></div>
+<h2>การต่อวงจร</h2>
+<p>เป็นซอฟต์แวร์ล้วน — ต้องต่อ WiFi/เน็ตเท่านั้น</p>
+<h2>ข้อควรระวัง</h2>
+<ul><li><strong>AWS IoT กิน RAM สูง (TLS + cert)</strong> — บน ESP32-C3 ต้องทดสอบ <code>gc.mem_free()</code> ก่อน และใช้ partition ขนาดใหญ่พอ</li><li>ตัวที่ใช้ <code>urequests</code>/<code>umqtt</code> ต้องติดตั้ง library เหล่านั้นใน firmware</li><li>Firebase legacy auth ถูก Google deprecate — ควรอัปเกรดเป็น service account/ID token</li><li>Blynk HTTP API ถูก rate-limit — ไม่เหมาะส่งค่าความถี่สูง ใช้ MQTT-based แพลตฟอร์มแทนถ้าต้อง realtime</li><li>อย่า commit token/key ลง git — เก็บใน config JSON หรือ environment</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>mqtt.mqttmanager.MQTTManager</code> / <code>http.httpclient.HTTPClient</code> — base ของ wrapper เหล่านี้</li><li><code>wifi.wifimanager.WiFiManager</code> — ต่อเน็ตก่อนเสมอ</li><li><code>sensors</code> — อ่านค่าแล้วส่งขึ้น cloud</li><li><code>storage.config_mgr.JsonConfigManager</code> — เก็บ credentials</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

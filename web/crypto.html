@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crypto — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="การเข้ารหัส/แฮช — SHA-256/512, HMAC, PBKDF2, base64/hex, TLS/SSL">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link active" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🔑 Crypto</span><span>/</span><span>Crypto</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>crypto</code> เป็น <strong>thin wrapper</strong> รอบโมดูล crypto มาตรฐานของ MicroPython (<code>hashlib</code>, <code>hmac</code>, <code>ssl</code>, <code>ubinascii</code>) — มี 2 คลาส:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>คลาส</th><th>ใช้ทำอะไร</th></tr></thead><tbody><tr><td><code>crypto_helpers.py</code></td><td><code>HashHelper</code></td><td>แฮช (SHA-256/512/1, MD5), HMAC, PBKDF2, แปลง hex/base64</td></tr><tr><td><code>crypto_helpers.py</code></td><td><code>SSLHelper</code></td><td>wrap socket เป็น TLS (client/server) + จัดการ certificate</td></tr></tbody></table></div>
+<p><strong>ทำไมต้องมี wrapper:</strong> เรียกสั้นลง จัดการ encode/decode (bytes ↔ str) ให้อัตโนมัติ และมี helper ที่ใช้บ่อยในโปรเจกต์ IoT (PBKDF2, HMAC) ครบ</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)</code></pre></div>
+<p><strong>ESP32-C3 มี hardware acceleration</strong> สำหรับ AES (128/192/256) และ SHA — <code>hashlib</code>/<code>ucryptolib</code> ใช้ประโยชน์จากสิ่งนี้ได้</p>
+<hr>
+<h2>HashHelper — แฮช + HMAC + PBKDF2</h2>
+<p>class static ทั้งหมด — รับ <code>bytes</code>, คืน <code>bytes</code> (หรือ <code>str</code> สำหรับ <code>to_*</code>)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>คืนค่า</th></tr></thead><tbody><tr><td><code>sha256(data)</code> / <code>sha512(data)</code> / <code>sha1(data)</code> / <code>md5(data)</code></td><td>แฮชเดี่ยว</td><td><code>bytes</code> 32/64/20/16 ไบต์</td></tr><tr><td><code>hmac_sha256(key, data)</code> / <code>hmac_sha512(key, data)</code> / <code>hmac_sha1(key, data)</code></td><td>HMAC สำหรับยืนยันความถูกต้องด้วย key ลับ</td><td><code>bytes</code></td></tr><tr><td><code>pbkdf2_sha256(password, salt, iterations=100000, dklen=32)</code></td><td><strong>สร้าง key จาก password</strong> (กัน brute-force — ใช้กับ password ที่คนจำได้)</td><td><code>bytes</code></td></tr><tr><td><code>to_hex(bytes)</code> / <code>from_hex(str)</code></td><td>แปลง hex ↔ bytes</td><td><code>str</code> / <code>bytes</code></td></tr><tr><td><code>to_base64(bytes)</code> / <code>from_base64(str)</code></td><td>แปลง base64 ↔ bytes</td><td><code>str</code> / <code>bytes</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from crypto import HashHelper
+
+h = HashHelper.sha256(b&#x27;hello&#x27;)
+print(HashHelper.to_hex(h))                      # 2cf24dba... (64 hex chars)
+
+mac = HashHelper.hmac_sha256(b&#x27;secret-key&#x27;, b&#x27;message&#x27;)
+key = HashHelper.pbkdf2_sha256(&#x27;mypassword&#x27;, b&#x27;salt&#x27;, iterations=10000, dklen=16)
+print(HashHelper.to_base64(h))</code></pre></div>
+<p><strong>ใช้ตอนไหน:</strong></p>
+<ul><li><code>sha256</code>/<code>hmac</code> — ตรวจสอบความถูกต้องของข้อมูล (firmware checksum, message authentication)</li><li><code>pbkdf2_sha256</code> — เปลี่ยน password ที่คนจำได้ → key ที่แข็งแรงสำหรับเข้ารหัส (โมดูล <code>security.secret_store</code> ใช้วิธีนี้)</li><li><code>to_hex</code>/<code>to_base64</code> — เอา hash/token ที่เป็น bytes ไปส่งต่อผ่าน text (JSON, MQTT)</li></ul>
+<h2>SSLHelper — TLS/SSL สำหรับ socket</h2>
+<p><code>SSLHelper(cert_file='ca.crt', key_file=None, verify=True)</code> — ใช้กับ custom socket code (HTTPClient/MQTT รองรับ HTTPS/TLS ในตัวอยู่แล้วผ่าน urequests/umqtt)</p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>wrap_client_socket(sock, hostname=None)</code></td><td>wrap socket เป็น TLS client (ระบุ hostname เพื่อ SNI/verify)</td><td>SSL socket</td></tr><tr><td><code>wrap_server_socket(sock)</code></td><td>wrap socket เป็น TLS server (ต้องมี <code>key_file</code>)</td><td>SSL socket</td></tr><tr><td><code>verify</code> (get/set)</td><td>เปิด/ปิดการตรวจสอบ certificate (default <code>True</code> = แนะนำ)</td><td><code>bool</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import socket
+from crypto import SSLHelper
+
+ssl_h = SSLHelper(cert_file=&#x27;/ca.crt&#x27;)           # ไฟล์ CA certificate (PEM)
+raw = socket.socket()
+raw.connect((&#x27;example.com&#x27;, 443))
+tls = ssl_h.wrap_client_socket(raw, &#x27;example.com&#x27;)
+tls.write(b&#x27;GET / HTTP/1.0\r\n\r\n&#x27;)
+print(tls.read())</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>สถานการณ์</th><th>ต้องมีไฟล์</th></tr></thead><tbody><tr><td>TLS client (เชื่อมต่อ HTTPS/secure server)</td><td><code>cert_file</code> (CA cert ของ server)</td></tr><tr><td>TLS server / mTLS</td><td><code>cert_file</code> + <code>key_file</code> (cert ของเรา + private key)</td></tr></tbody></table></div>
+<p><strong>คำเตือน:</strong> ปิด <code>verify=False</code> เปิดช่องให้ man-in-the-middle — ใช้เฉพาะทดสอบ</p>
+<hr>
+<h2>สรุปการเลือกใช้</h2>
+<ul><li><strong>ตรวจสอบ/แฮชข้อมูล:</strong> <code>HashHelper.sha256</code>/<code>hmac_*</code></li><li><strong>แปลง key/secret จาก password:</strong> <code>HashHelper.pbkdf2_sha256</code></li><li><strong>ส่ง hash/token เป็นข้อความ:</strong> <code>HashHelper.to_hex</code>/<code>to_base64</code></li><li><strong>เชื่อมต่อแบบเข้ารหัสด้วย socket เอง:</strong> <code>SSLHelper</code></li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>security</code> — <code>SecretStore</code> (PBKDF2 + AES) และ <code>AuthProvider</code> (SHA-256 token) ใช้ <code>HashHelper</code> เป็นตัวขับเคลื่อน</li><li><code>network</code> / <code>cloud</code> — HTTPS/TLS ของ urequests/umqtt จัดการให้เอง; ใช้ <code>SSLHelper</code> เฉพาะเมื่อเขียน socket เอง</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

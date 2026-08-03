@@ -2,7 +2,7 @@
 
 > วันที่: 2026-05-03  
 > รองรับ: ESP32 / ESP32-S2 / ESP32-S3 / ESP32-C3 / ESP32-C6  
-> รวม: **80+ โมดูล**, 25+ หมวดหมู่
+> รวม: **95 โมดูล** (ใน `src/lib/`), 29 หมวดหมู่
 
 ---
 
@@ -355,3 +355,9 @@ USB转TTL CH340模块
 - ESP32-C3/C6 **ไม่มี TouchPad** → `touch.py` ใช้ไม่ได้
 - ESP32-C3/C6 **ไม่มี Ethernet MAC** → ต้องใช้ LAN8720 ผ่าน SPI
 - AWS IoT ใช้ TLS กิน RAM สูง → ควรทดสอบหน่วยความจำก่อนใช้
+
+## 🧪 Test Suite (อัปเดต 2026-08-03)
+
+- 17 ไฟล์เทสต์ใน `src/tests/` — **384 เทสต์ผ่าน 100%** (CPython + mocks MicroPython)
+- ดูผลตรวจสอบและ bug ที่ซ่อมใน **[AUDIT_REPORT.md](../AUDIT_REPORT.md)**
+- รัน: `cd src/tests; python run_tests.py`

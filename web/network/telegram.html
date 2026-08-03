@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Telegram Bot — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="Telegram Bot โต้ตอบ 2 ทาง — ส่งข้อความ/รูป/คีย์บอร์ด และรับคำสั่งผ่าน long/short polling">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="../getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="websocket.html">🔗 WebSocket</a>
+<a class="nav-link active" href="telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="../cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="../sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="../display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="../output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="../input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="../p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="../audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="../io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="../io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="../storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="../system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="../security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="../crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="../repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>🌐 Network &amp; Communication</span><span>/</span><span>Telegram Bot</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>telegram</code> สร้าง Telegram Bot แบบ <strong>โต้ตอบ 2 ทาง</strong> ผ่าน Bot API (HTTPS) — ESP32 ส่งข้อความแจ้งเตือน/รูป/ไฟล์ และรับคำสั่ง/ปุ่มกดจากผู้ใช้</p>
+<ul><li><strong><code>TelegramBot</code></strong> — ตัวจัดการ bot ทั้งหมด: ลงทะเบียน handler (<code>on_command</code>/<code>on_message</code>/<code>on_callback_query</code>), ส่งข้อความ (<code>send_message</code>), รับคำสั่ง (<code>loop</code>/<code>run</code>)</li><li><strong><code>MessageContext</code></strong> — ข้อมูลข้อความ/คำสั่งที่ส่งให้ handler (<code>ctx.reply()</code> ตอบกลับง่าย ๆ)</li></ul>
+<p>แนวคิดหลัก: <strong>Polling</strong> แทน webhook (ESP32 ไม่มี IP สาธารณะ) มี 2 โหมด:</p>
+<ul><li><code>"sync"</code> — long-poll (timeout 25s) เหมาะสคริปต์ bot ตัวเดียว (ใช้ <code>bot.loop()</code>)</li><li><code>"async"</code> — short-poll ทุก 1.5s ไม่บล็อก event loop (ใช้ <code>bot.run()</code> เป็น task)</li></ul>
+<p>ขั้นตอน: ตั้ง token → ลงทะเบียน handler → เรียก <code>loop()</code> หรือ <code>run()</code> → bot จะรับ/ตอบอัตโนมัติ</p>
+<h2>การติดตั้ง / import</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from telegram.telegram_bot import TelegramBot</code></pre></div>
+<p>ต้องมี <code>urequests</code> ใน firmware และสร้าง bot กับ @BotFather ก่อนเพื่อขอ token</p>
+<h2>Constructor</h2>
+<p><code>TelegramBot(token=None, config_file="telegram_config.json", poll_mode="async", poll_timeout=25, poll_interval_ms=1500, max_updates=10, allowed_chat_ids=None, http_timeout=40, verify_cert=False, ca_cert="/cert/ca.pem")</code></p>
+<div class="table-wrap"><table><thead><tr><th>พารามิเตอร์</th><th>ค่าเริ่มต้น</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>token</code></td><td><code>None</code></td><td>Bot token จาก @BotFather</td></tr><tr><td><code>poll_mode</code></td><td><code>"async"</code></td><td><code>"sync"</code> (long-poll) หรือ <code>"async"</code> (short-poll)</td></tr><tr><td><code>poll_timeout</code></td><td><code>25</code></td><td>timeout ของ long-poll (วินาที)</td></tr><tr><td><code>poll_interval_ms</code></td><td><code>1500</code></td><td>ช่วง poll ใน async mode</td></tr><tr><td><code>max_updates</code></td><td><code>10</code></td><td>จำนวน update สูงสุดต่อรอบ</td></tr><tr><td><code>allowed_chat_ids</code></td><td><code>None</code></td><td>whitelist chat — ว่าง = ทุกคนใช้ได้</td></tr><tr><td><code>verify_cert</code></td><td><code>False</code></td><td>ตรวจใบรับรอง SSL จริง (กัน MITM)</td></tr><tr><td><code>ca_cert</code></td><td><code>"/cert/ca.pem"</code></td><td>path CA cert (ใช้ตอน verify_cert=True)</td></tr></tbody></table></div>
+<h2>ตาราง API</h2>
+<h3>การลงทะเบียน handler</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>on_command(command, handler)</code></td><td>รับคำสั่ง <code>/command</code></td><td><code>command: str</code> (มี/ไม่มี <code>/</code>), <code>handler(ctx)</code></td><td>—</td><td>ใช้กับ <code>loop()</code>/<code>run()</code></td></tr><tr><td><code>on_message(handler)</code></td><td>รับข้อความทั่วไปที่ไม่มีคำสั่ง</td><td><code>handler(ctx)</code></td><td>—</td><td>ใช้กับคำสั่ง</td></tr><tr><td><code>on_callback_query(handler)</code></td><td>รับการกดปุ่ม inline keyboard</td><td><code>handler(ctx)</code></td><td>—</td><td>ต้องตอบ <code>ctx.answer_callback()</code></td></tr><tr><td><code>on_update(handler)</code></td><td>รับ raw update ทุกตัว</td><td><code>handler(update_dict)</code></td><td>—</td><td>ใช้กรณีพิเศษ</td></tr></tbody></table></div>
+<h3>การส่ง (ESP32 → Telegram)</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>get_me()</code></td><td>ตรวจ token</td><td>—</td><td><code>username: str</code> หรือ <code>None</code></td><td>—</td></tr><tr><td><code>send_message(chat_id, text, parse_mode, keyboard, disable_notification)</code></td><td>ส่งข้อความ</td><td><code>chat_id</code>, <code>text</code> (ตัดที่ 4096), <code>parse_mode="HTML"/"Markdown"</code>, <code>keyboard</code></td><td><code>message_id</code> หรือ <code>None</code></td><td>หัวใจการส่ง</td></tr><tr><td><code>send_photo(chat_id, path, caption)</code></td><td>ส่งรูปจาก flash</td><td><code>path: str</code>, <code>caption</code></td><td><code>bool</code></td><td>ต้องมีไฟล์บนบอร์ด</td></tr><tr><td><code>send_document(chat_id, path, caption)</code></td><td>ส่งไฟล์</td><td><code>path</code>, <code>caption</code></td><td><code>bool</code></td><td>ไฟล์ ≤100KB แนะนำ</td></tr><tr><td><code>edit_message(chat_id, message_id, text, parse_mode)</code></td><td>แก้ข้อความเดิม (อัปเดตสถานะ)</td><td><code>message_id</code> ของข้อความเดิม</td><td><code>bool</code></td><td>ใช้กับ message_id จาก <code>send_message()</code></td></tr><tr><td><code>send_keyboard(chat_id, text, buttons, parse_mode)</code></td><td>ส่งปุ่ม inline</td><td><code>buttons</code> (ดู <code>inline_keyboard</code>)</td><td><code>message_id</code>/<code>None</code></td><td>รวม <code>send_message</code>+<code>inline_keyboard</code></td></tr><tr><td><code>answer_callback_query(callback_query_id, text)</code></td><td>ตอบรับปุ่ม (ปิดสปินเนอร์)</td><td><code>callback_query_id</code>, <code>text</code> (popup)</td><td><code>bool</code></td><td>ใช้ภายใน <code>on_callback_query</code></td></tr></tbody></table></div>
+<h3>UI helpers (static)</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>inline_keyboard(rows)</code></td><td>สร้างปุ่มในข้อความ</td><td><code>rows</code>: list ของแถว <code>[(text, cb_data)]</code> หรือ <code>{text: cb_data}</code></td><td><code>reply_markup: dict</code></td></tr><tr><td><code>reply_keyboard(rows, one_time, resize)</code></td><td>ปุ่มใต้ช่องพิมพ์</td><td><code>rows</code>: list ของแถว <code>[str]</code></td><td><code>reply_markup: dict</code></td></tr><tr><td><code>remove_keyboard()</code></td><td>ลบ reply keyboard</td><td>—</td><td><code>reply_markup: dict</code></td></tr></tbody></table></div>
+<h3>การรับ (Telegram → ESP32)</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>get_updates()</code></td><td>ดึงข้อความใหม่ (จำ offset อัตโนมัติ)</td><td>—</td><td><code>list[dict]</code></td><td>ภายในของ <code>process_updates()</code></td></tr><tr><td><code>process_updates(updates)</code></td><td>ประมวลผลทีละตัว (ประหยัด RAM)</td><td><code>updates: list</code> (None=ดึงเอง)</td><td><code>int</code> (จำนวน)</td><td>ภายในของ <code>poll()</code></td></tr><tr><td><code>poll()</code></td><td>1 รอบ: getUpdates→process</td><td>—</td><td><code>int</code></td><td>ใช้ในลูปเอง</td></tr><tr><td><code>loop(sleep_ms)</code></td><td><strong>sync</strong> ลูปตลอด (บล็อก)</td><td><code>sleep_ms=100</code></td><td>ไม่คืนค่า</td><td>เหมาะสคริปต์เดียว</td></tr><tr><td><code>poll_once()</code></td><td>async: ปล่อย task อื่นแล้ว poll 1 รอบ</td><td>—</td><td><code>int</code></td><td>ใช้ในลูป async เอง</td></tr><tr><td><code>run(stop_event)</code></td><td><strong>async</strong> ลูป ไม่บล็อก</td><td><code>stop_event</code> (optional)</td><td>ไม่คืนค่า</td><td><code>asyncio.create_task(bot.run())</code></td></tr></tbody></table></div>
+<h3>MessageContext (ให้ handler)</h3>
+<div class="table-wrap"><table><thead><tr><th>attribute/method</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>chat_id</code>, <code>text</code>, <code>message_id</code>, <code>user_id</code>, <code>username</code></td><td>ข้อมูลข้อความ</td></tr><tr><td><code>command</code></td><td>คำสั่งที่ได้รับ (เช่น <code>/status</code>)</td></tr><tr><td><code>args</code></td><td>argument ต่อท้ายคำสั่ง (list)</td></tr><tr><td><code>data</code>, <code>callback_query_id</code></td><td>ข้อมูลปุ่ม (กรณี callback)</td></tr><tr><td><code>reply(text, parse_mode, keyboard)</code></td><td>ตอบกลับ chat ต้นทาง → ส่ง <code>send_message()</code></td></tr><tr><td><code>answer_callback(text)</code></td><td>ตอบรับ callback (ต้องเรียกถ้าใช้ปุ่ม)</td></tr></tbody></table></div>
+<h2>ตัวอย่างการใช้งาน</h2>
+<h3>🟢 พื้นฐาน — บอทตอบคำสั่ง</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from telegram.telegram_bot import TelegramBot
+
+bot = TelegramBot(token=&quot;123456:ABC-DEF...&quot;, allowed_chat_ids=[123456789])
+
+bot.on_command(&quot;/status&quot;, lambda ctx: ctx.reply(&quot;🟢 ONLINE&quot;))
+bot.on_command(&quot;/temp&quot;, lambda ctx: ctx.reply(&quot;🌡️ 25.5°C&quot;))
+
+bot.loop()          # sync long-poll (บล็อก)</code></pre></div>
+<h3>🟡 ใช้งานจริง — async รันร่วมกับเซ็นเซอร์</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from sensors.dht import DHTSensor
+from telegram.telegram_bot import TelegramBot
+
+bot = TelegramBot(token=&quot;123456:ABC-DEF...&quot;, allowed_chat_ids=[123456789])
+dht = DHTSensor(pin=4, model=&#x27;DHT22&#x27;)
+
+async def main():
+    def send_temp(ctx):
+        temp, hum = dht.read()
+        ctx.reply(f&quot;🌡️ {temp}°C / 💧 {hum}%&quot;)
+
+    bot.on_command(&quot;/temp&quot;, send_temp)
+    asyncio.create_task(bot.run())          # async polling
+
+    # งานอื่นของ ESP32 ทำต่อได้
+    while True:
+        await asyncio.sleep(60)
+        bot.send_message(123456789, &quot;🔔 แจ้งเตือนรายชั่วโมง&quot;)
+
+asyncio.run(main())</code></pre></div>
+<h3>🔴 ขั้นสูง — inline keyboard</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from telegram.telegram_bot import TelegramBot
+
+bot = TelegramBot(token=&quot;123456:ABC-DEF...&quot;)
+
+def on_btn(ctx):
+    if ctx.data == &quot;on&quot;:
+        ctx.answer_callback(&quot;เปิดไฟแล้ว ✅&quot;)
+    elif ctx.data == &quot;off&quot;:
+        ctx.answer_callback(&quot;ปิดไฟแล้ว&quot;)
+
+bot.on_callback_query(on_btn)
+bot.on_command(&quot;/led&quot;, lambda ctx: ctx.send_keyboard(
+    ctx.chat_id, &quot;ควบคุมไฟ:&quot;, [[&quot;เปิดไฟ&quot;, &quot;on&quot;], [&quot;ปิดไฟ&quot;, &quot;off&quot;]]
+))
+
+bot.loop()</code></pre></div>
+<h2>การต่อวงจร</h2>
+<p>เป็นซอฟต์แวร์ล้วน — ต้องต่อ WiFi และมีเวลาในระบบ (ใช้ NTP เพื่อ timestamp ที่ถูกต้อง) ก่อน:</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from system.rtc import RTCManager
+rtc = RTCManager()
+rtc.sync_ntp(timezone_offset_hours=7)</code></pre></div>
+<h2>ข้อควรระวัง</h2>
+<ul><li><strong>ไฟล์อัปโหลดจำกัด ~100KB</strong> — ใหญ่กว่านี้ RAM จะไม่พอ (มีเตือนในโค้ด)</li><li><code>verify_cert=True</code> ต้องมี CA cert อยู่ที่ <code>ca_cert</code> (โปรเจกต์มี <code>src/cert/ca.pem</code> แล้ว) และต้องใช้ MicroPython 1.20+ (SSLContext)</li><li><code>loop()</code> บล็อก — อย่าใช้พร้อมงาน async อื่น ให้ใช้ <code>run()</code> แทน</li><li>มี throttle ~1 API call/วินาทีในตัว ป้องกันเกิน limit ของ Telegram</li><li>Token เป็นความลับ — อย่า commit ลง git ควรเก็บใน <code>telegram_config.json</code> ที่ไม่ได้ขึ้น git</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>wifi.wifimanager.WiFiManager</code> — ต้องเชื่อมต่อเน็ตก่อน</li><li><code>system.rtc.RTCManager</code> — sync เวลาผ่าน NTP</li><li><code>sensors</code> — ส่งค่าที่อ่านได้มาแจ้งเตือน</li><li><code>storage.config_mgr.JsonConfigManager</code> — backend ของ config (token ฯลฯ)</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "../";</script>
+<script src="../assets/js/search-index.js"></script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

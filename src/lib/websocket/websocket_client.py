@@ -366,7 +366,7 @@ class WebSocketClient:
 
         # Unmask if needed
         if mask_key:
-            payload = bytes(p[i] ^ mask_key[i % 4] for i in range(len(payload)))
+            payload = bytes(payload[i] ^ mask_key[i % 4] for i in range(len(payload)))
 
         # Handle control frames
         if opcode == OP_CLOSE:

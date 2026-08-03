@@ -32,7 +32,11 @@ REG_OTP_READ        = 0x07   # OTP read access
 REG_FACTORY_CONF    = 0x08   # Factory configuration
 
 REG_SHORT_CONF      = 0x09   # Short detection config
-REG_DRV_CONF        = 0x0A   # Driver current & timing
+REG_DRV_CONF        = 0x0A   # Driver current & timing (GLOBAL_SCALER + IRUN/IHOLD)
+
+# Alias ตามชื่อที่ใช้ในโค้ด
+REG_IHOLD_IRUN      = REG_DRV_CONF  # IRUN[13:8], IHOLD[21:16], IHOLDDELAY[24:22]
+REG_SGT             = 0x40          # SGTHRS — StallGuard2 threshold (SG_RESULT=0x41)
 
 # ── Velocity & Position Ramp Registers ─────────────────────
 REG_RAMPMODE        = 0x20   # Ramp mode (position/velocity/hold)

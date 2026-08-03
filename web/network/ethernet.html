@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ethernet — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="Ethernet ผ่าน external PHY (LAN8720) แบบ RMII — DHCP/static IP, MAC และ async connect">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="../getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="can.html">🚗 CAN Bus</a>
+<a class="nav-link active" href="ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="../cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="../sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="../display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="../output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="../input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="../p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="../audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="../io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="../io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="../storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="../system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="../security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="../crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="../repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>🌐 Network &amp; Communication</span><span>/</span><span>Ethernet</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>ethernet</code> เชื่อมต่อ ESP32 กับเน็ตผ่านสายแลนแทน WiFi โดยใช้ <strong>external PHY chip</strong> (เช่น LAN8720) ผ่าน interface RMII</p>
+<blockquote>⚠️ <strong>ESP32-C3 ไม่รองรับ Ethernet แบบนี้</strong> — โมดูลนี้ใช้ <code>network.LAN</code> (built-in EMAC) ซึ่ง <strong>มีเฉพาะใน ESP32 (classic) เท่านั้น</strong> ESP32-C3 ไม่มี EMAC peripheral และไม่มี GPIO ครบตามตารางข้างล่าง (C3 มีแค่ GPIO0–21) — ถ้าใช้กับ C3 ตัว constructor จะเตือน warning และ <code>connect()</code> จะคืน <code>False</code> (ไม่มี interface)</blockquote>
+<ul><li><strong><code>EthernetManager</code></strong> — สร้าง <code>network.LAN</code>, เชื่อมต่อ (DHCP), ตั้ง static IP, อ่าน MAC/ifconfig, เวอร์ชัน async</li></ul>
+<p>แนวคิดหลัก: RMII ใช้ GPIO 8–10 ขา (MDC/MDIO + 4 สายข้อมูล + REF_CLK) ต้องมี 50MHz clock (จากคริสตัลบนโมดูล LAN8720 หรือจาก GPIO) เหมาะกับระบบที่ต้องการการเชื่อมต่อที่เสถียร/ไม่ต้องพึ่ง WiFi</p>
+<h2>การติดตั้ง / import</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from ethernet.ethernet_manager import EthernetManager</code></pre></div>
+<h2>Constructor</h2>
+<p><code>EthernetManager(mdc=23, mdio=18, phy_type="LAN8720", phy_addr=1, ref_clk="gpio17_out", power_pin=None, lan_id=0)</code></p>
+<div class="table-wrap"><table><thead><tr><th>พารามิเตอร์</th><th>ค่าเริ่มต้น</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>mdc</code></td><td><code>23</code></td><td>GPIO ของ MDC (Management Data Clock)</td></tr><tr><td><code>mdio</code></td><td><code>18</code></td><td>GPIO ของ MDIO (Management Data I/O)</td></tr><tr><td><code>phy_type</code></td><td><code>"LAN8720"</code></td><td><code>LAN8720/IP101/DP83848/RTL8201/KSZ8041</code></td></tr><tr><td><code>phy_addr</code></td><td><code>1</code></td><td>ที่อยู่ PHY บน MDIO bus (ปกติ 0 หรือ 1)</td></tr><tr><td><code>ref_clk</code></td><td><code>"gpio17_out"</code></td><td>แหล่ง clock 50MHz: <code>gpio0_in</code>/<code>gpio0_out</code>/<code>gpio16_out</code>/<code>gpio17_out</code></td></tr><tr><td><code>power_pin</code></td><td><code>None</code></td><td>GPIO ควบคุมไฟ PHY (เปิดให้อัตโนมัติตอน init)</td></tr><tr><td><code>lan_id</code></td><td><code>0</code></td><td>LAN interface ID</td></tr></tbody></table></div>
+<p>ค่าคงที่: <code>PHY_LAN8720=0 … PHY_KSZ8041=4</code>, <code>CLOCK_GPIO0_IN/OUT</code>, <code>CLOCK_GPIO16_OUT</code>, <code>CLOCK_GPIO17_OUT</code></p>
+<h2>ตาราง API</h2>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>connect(timeout_ms)</code></td><td>เชื่อมต่อแบบ DHCP</td><td><code>timeout_ms=15000</code></td><td><code>bool</code></td><td>ก่อนใช้เน็ต</td></tr><tr><td><code>disconnect()</code></td><td>ตัดการเชื่อมต่อ</td><td>—</td><td><code>bool</code></td><td>เรียกตอนจบ</td></tr><tr><td><code>ifconfig()</code></td><td>อ่าน config เน็ต</td><td>—</td><td><code>tuple (ip, netmask, gateway, dns)</code></td><td>หลัง <code>connect()</code></td></tr><tr><td><code>is_connected()</code></td><td>เช็คสถานะ</td><td>—</td><td><code>bool</code></td><td>ใช้ monitor</td></tr><tr><td><code>set_static(ip, netmask, gateway, dns)</code></td><td>ตั้ง IP คงที่</td><td><code>dns="8.8.8.8"</code></td><td>—</td><td>ก่อน/หลัง connect ได้</td></tr><tr><td><code>mac_address()</code></td><td>อ่าน MAC</td><td>—</td><td><code>str</code> (เช่น <code>"AA:BB:.."</code>)</td><td>—</td></tr><tr><td><code>async_connect(timeout_ms)</code></td><td>เวอร์ชัน async</td><td><code>timeout_ms=15000</code></td><td><code>bool</code></td><td>ใช้ใน event loop</td></tr><tr><td><code>deinit()</code></td><td>ปิดและคืนทรัพยากร</td><td>—</td><td>—</td><td>เรียกตอนจบ</td></tr><tr><td><code>ip_address</code> / <code>netmask</code> / <code>gateway</code> / <code>dns</code></td><td>properties อ่านค่า</td><td>—</td><td><code>str</code></td><td>หลัง <code>connect()</code></td></tr></tbody></table></div>
+<h2>ตัวอย่างการใช้งาน</h2>
+<h3>🟢 พื้นฐาน — เชื่อมต่อแบบ DHCP</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from ethernet.ethernet_manager import EthernetManager
+
+eth = EthernetManager(mdc=23, mdio=18)
+
+if eth.connect(timeout_ms=10000):
+    print(f&quot;🌐 เชื่อมต่อแล้ว IP: {eth.ip_address}&quot;)
+    print(f&quot;MAC: {eth.mac_address()}&quot;)
+    print(f&quot;DNS: {eth.dns}&quot;)
+else:
+    print(&quot;เชื่อมต่อไม่สำเร็จ&quot;)
+
+eth.disconnect()</code></pre></div>
+<h3>🟡 ใช้งานจริง — static IP + เช็คสถานะ</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import time
+from ethernet.ethernet_manager import EthernetManager
+
+eth = EthernetManager()
+eth.set_static(&quot;192.168.1.100&quot;, &quot;255.255.255.0&quot;, &quot;192.168.1.1&quot;, dns=&quot;8.8.8.8&quot;)
+
+if eth.connect():
+    while True:
+        print(&quot;🟢 ออนไลน์&quot; if eth.is_connected() else &quot;🔴 หลุด&quot;)
+        time.sleep(5)</code></pre></div>
+<h3>🔴 ขั้นสูง — async รันร่วมกับงานอื่น</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from ethernet.ethernet_manager import EthernetManager
+
+async def main():
+    eth = EthernetManager()
+    if await eth.async_connect():
+        print(f&quot;IP: {eth.ip_address}&quot;)
+        # รันงาน HTTP/MQTT ต่อได้เลย
+    eth.deinit()
+
+asyncio.run(main())</code></pre></div>
+<h2>การต่อวงจร (ESP32 + LAN8720)</h2>
+<blockquote>ตารางนี้เป็นพินของ <strong>ESP32 (classic)</strong> ที่มี EMAC — ใช้กับ C3 ไม่ได้ (GPIO22–27 ไม่มีบน C3)</blockquote>
+<div class="code-block"><div class="code-head"><span>text</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-text">ESP32-C3          LAN8720
+─────────         ───────
+GPIO23 (MDC) ──→  MDC
+GPIO18 (MDIO)──→  MDIO
+GPIO19 (TXD0)──→  TXD0
+GPIO21 (TX_EN)──→ TX_EN
+GPIO22 (TXD1)──→  TXD1
+GPIO25 (RXD0) ←── RXD0
+GPIO26 (RXD1) ←── RXD1
+GPIO27 (CRS)  ←── CRS_DV
+GPIO17 (REF)  ──  50MHz clock out
+3.3V          ──→ VCC
+GND           ──── GND</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>ข้อ</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>PHY</td><td>ต้องเป็นโมดูล LAN8720 (หรือตาม <code>phy_type</code>)</td></tr><tr><td>Clock</td><td>บอร์ด LAN8720 ส่วนใหญ่มีคริสตัล 50MHz ในตัว — ถ้าไม่มีต้องใช้ <code>ref_clk</code> จาก GPIO</td></tr><tr><td>พิน</td><td>ใช้ 8–10 GPIO — ต้องดูว่าไม่ชนพินที่ใช้กับอย่างอื่น</td></tr><tr><td>ไฟ</td><td>PHY กิน ~100–300mW</td></tr></tbody></table></div>
+<h2>ข้อควรระวัง</h2>
+<ul><li><strong>ESP32-C3 ใช้โมดูลนี้ไม่ได้</strong> — C3 ไม่มี EMAC/<code>network.LAN</code> และไม่มี GPIO22–27 ใช้ได้เฉพาะ ESP32 (classic) ที่มี EMAC (พิน GPIO18–27)</li><li>ถ้า <code>network.LAN</code> API ต่างระหว่าง MicroPython port การสร้าง LAN ใน constructor อาจล้มเหลวแต่ไม่ crash (เตือนเป็น warning)</li><li>พิน RMII จำนวนมาก — วางแผน GPIO ให้ดี อย่าชนกับ SPI/I2C ที่ใช้อยู่</li><li><code>ref_clk="gpio17_out"</code> เป็นค่า default — ถ้าบอร์ดมีคริสตัลในตัว อาจต้องลองค่า clock mode อื่น</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>mqtt</code> / <code>http</code> / <code>websocket</code> / <code>telegram</code> — ใช้เน็ตต่อจาก Ethernet เหมือน WiFi</li><li><code>wifi.wifimanager.WiFiManager</code> — ทำ failover: ใช้ Ethernet ก่อน ถ้าพลาดค่อยสลับ WiFi</li><li><code>storage.config_mgr.JsonConfigManager</code> — เก็บ static IP/config (อัตโนมัติ)</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "../";</script>
+<script src="../assets/js/search-index.js"></script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

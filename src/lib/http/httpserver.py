@@ -29,9 +29,10 @@ class HTTPServer:
     def _parse_request(self, data):
         text = data.decode("utf-8", errors="ignore")
         lines = text.split("\r\n")
-        if not lines or len(lines[0].split(" ")) < 2:
+        parts = lines[0].split(" ")
+        if len(parts) < 3:
             return None
-        method, path, _ = lines[0].split(" ", 2)
+        method, path, _ = parts[0], parts[1], parts[2]
 
         body = ""
         idx = text.find("\r\n\r\n")

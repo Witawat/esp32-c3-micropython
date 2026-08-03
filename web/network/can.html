@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAN Bus — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="CAN Bus (TWAI) — ส่ง/รับ frame ผ่าน transceiver, filtering, loopback และตรวจสอบสถานะ bus">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="../getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link active" href="can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="../cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="../sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="../display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="../output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="../input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="../p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="../audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="../io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="../io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="../storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="../system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="../security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="../crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="../repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>🌐 Network &amp; Communication</span><span>/</span><span>CAN Bus</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>can</code> สื่อสารผ่าน <strong>CAN Bus (Controller Area Network)</strong> — โปรโตคอลยานยนต์/อุตสาหกรรม ใช้สาย 2 เส้น (CAN_H/CAN_L) ต่ออุปกรณ์หลายตัวบน bus เดียวกัน ประกอบด้วย:</p>
+<ul><li><strong><code>CANManager</code></strong> — จัดการบัส: ส่ง frame, อ่าน frame, ตั้ง hardware filter, loopback mode, เช็คสถานะ bus</li><li><strong><code>CANFrame</code></strong> — โครงสร้างข้อมูล frame (id, data, is_extended, is_remote, timestamp)</li></ul>
+<p>แนวคิดหลัก: ส่งด้วย <code>send(can_id, data)</code> → รับด้วย <code>read()</code> → ค่าคืนเป็น <code>CANFrame</code> ที่อ่าน <code>.id</code>/<code>.data</code> ได้ สำหรับ C3 ต้องใช้ <strong>CAN transceiver</strong> (เช่น SN65HVD230) ระหว่าง ESP32 กับสายบัส เพราะ GPIO ใช้ไฟ 3.3V ไม่ได้ขับบัส CAN โดยตรง</p>
+<h2>การติดตั้ง / import</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from can.can_manager import CANManager, CANFrame</code></pre></div>
+<h2>Constructor</h2>
+<p><code>CANManager(rx=1, tx=2, baudrate=500000, mode="normal", can_id=0)</code></p>
+<div class="table-wrap"><table><thead><tr><th>พารามิเตอร์</th><th>ค่าเริ่มต้น</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>rx</code></td><td><code>1</code></td><td>GPIO สำหรับ RX — <strong>C3 ต้องเป็น GPIO1 เท่านั้น</strong></td></tr><tr><td><code>tx</code></td><td><code>2</code></td><td>GPIO สำหรับ TX — <strong>C3 ต้องเป็น GPIO2 เท่านั้น</strong></td></tr><tr><td><code>baudrate</code></td><td><code>500000</code></td><td>25k–1M bps (500k = มาตรฐานยานยนต์)</td></tr><tr><td><code>mode</code></td><td><code>"normal"</code></td><td><code>"normal"</code> / <code>"loopback"</code> (ทดสอบ) / <code>"listen_only"</code></td></tr><tr><td><code>can_id</code></td><td><code>0</code></td><td>controller id (C3 มี CAN0)</td></tr></tbody></table></div>
+<h2>ตาราง API</h2>
+<h3>CANManager</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>send(can_id, data, is_extended, is_remote)</code></td><td>ส่ง frame ไปบนบัส</td><td><code>can_id: int</code> (11/29-bit), <code>data: bytes</code> (0–8), <code>is_extended: bool</code>, <code>is_remote: bool</code></td><td>—</td><td>รับได้ทุกโหนดบนบัสที่ filter ตรง</td></tr><tr><td><code>read(timeout_ms)</code></td><td>รับ frame</td><td><code>timeout_ms: int</code> (0=non-block)</td><td><code>CANFrame</code> หรือ <code>None</code></td><td>ใช้กับ <code>peek()</code></td></tr><tr><td><code>peek()</code></td><td>เช็คว่ามี frame รออ่าน</td><td>—</td><td><code>int</code> (bytes ใน buffer)</td><td>ก่อน <code>read()</code></td></tr><tr><td><code>set_filter(can_id, mask, extended)</code></td><td>รับเฉพาะ frame ที่ตรงเงื่อนไข</td><td><code>can_id</code>, <code>mask=0x7FF</code>, <code>extended: bool</code></td><td>—</td><td>กรอง: <code>(id &amp; mask) == (can_id &amp; mask)</code></td></tr><tr><td><code>clear_filter()</code></td><td>ล้าง filter รับทุก frame</td><td>—</td><td>—</td><td>ใช้คู่กับ <code>set_filter()</code></td></tr><tr><td><code>enable_loopback()</code></td><td>ทดสอบ TX→RX สะท้อนกลับ</td><td>—</td><td>—</td><td>ใช้ตอน debug ไม่มีบัสจริง</td></tr><tr><td><code>bus_state()</code></td><td>เช็คสถานะบัส</td><td>—</td><td><code>str</code> (<code>active</code>/<code>warning</code>/<code>passive</code>/<code>bus_off</code>)</td><td>ใช้ monitor</td></tr><tr><td><code>error_counters()</code></td><td>อ่าน error counter</td><td>—</td><td><code>dict {tx_error, rx_error}</code></td><td>⚠️ คืน 0 เสมอ (machine.CAN ไม่ expose)</td></tr><tr><td><code>deinit()</code></td><td>ปิดบัส</td><td>—</td><td>—</td><td>เรียกตอนจบ</td></tr><tr><td><code>baudrate</code> (property)</td><td>เปลี่ยนความเร็ว</td><td><code>int</code> (bps)</td><td>—</td><td>get/set ได้</td></tr></tbody></table></div>
+<h3>CANFrame</h3>
+<div class="table-wrap"><table><thead><tr><th>attribute</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>.id</code></td><td>CAN ID (int)</td></tr><tr><td><code>.dlc</code></td><td>จำนวน byte ข้อมูล (0–8)</td></tr><tr><td><code>.data</code></td><td>payload (<code>bytes</code>)</td></tr><tr><td><code>.timestamp</code></td><td>เวลาที่ได้รับ</td></tr><tr><td><code>.is_extended</code></td><td>extended frame (29-bit)</td></tr><tr><td><code>.is_remote</code></td><td>remote frame (RTR)</td></tr><tr><td><code>CANFrame.from_tuple(tpl)</code></td><td>static — แปลงผลลัพธ์ <code>machine.CAN.recv()</code> เป็น CANFrame</td></tr></tbody></table></div>
+<h2>ตัวอย่างการใช้งาน</h2>
+<h3>🟢 พื้นฐาน — ส่งและรับ frame</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from can.can_manager import CANManager
+
+can = CANManager(rx=1, tx=2, baudrate=500000)
+
+# ส่ง
+can.send(0x123, b&#x27;\x01\x02\x03&#x27;)
+
+# รับ (บล็อก 100ms)
+frame = can.read(timeout_ms=100)
+if frame:
+    print(f&quot;ID=0x{frame.id:X} Data={frame.data.hex().upper()}&quot;)
+
+can.deinit()</code></pre></div>
+<h3>🟡 ใช้งานจริง — รับหลาย frame + filter</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import time
+from can.can_manager import CANManager
+
+can = CANManager(baudrate=500000)
+can.set_filter(can_id=0x100, mask=0x7FF)   # รับเฉพาะ ID 0x100
+
+start = time.ticks_ms()
+while time.ticks_diff(time.ticks_ms(), start) &lt; 5000:
+    if can.peek():
+        frame = can.read(timeout_ms=0)
+        if frame:
+            print(f&quot;[{frame.timestamp}ms] 0x{frame.id:X}: {frame.data.hex()}&quot;)
+    time.sleep_ms(10)
+
+can.clear_filter()
+can.deinit()</code></pre></div>
+<h3>🔴 ขั้นสูง — loopback ทดสอบ + ตรวจสอบบัส</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from can.can_manager import CANManager
+
+# ทดสอบโดยไม่ต้องต่อบัสจริง
+can = CANManager(mode=&quot;loopback&quot;)
+can.enable_loopback()
+can.send(0x200, b&#x27;\xAA\xBB&#x27;)
+
+frame = can.read(timeout_ms=1000)
+print(&quot;Loopback:&quot;, frame)                  # ควรได้ frame คืนมาเอง
+
+print(&quot;Bus state:&quot;, can.bus_state())
+can.deinit()</code></pre></div>
+<h2>การต่อวงจร</h2>
+<div class="code-block"><div class="code-head"><span>text</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-text">ESP32-C3          SN65HVD230          CAN Bus
+─────────         ──────────          ───────
+GPIO1  ──────────→ TXD
+GPIO2  ←────────── RXD
+3.3V   ──────────→ VCC
+GND    ──────────── GND
+
+SN65HVD230:       CANH ──→ CAN_H
+                  CANL ──→ CAN_L</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>ข้อ</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>Transceiver</td><td>จำเป็น (SN65HVD230, TJA1050, MCP2551) — C3 ไม่มี PHY ในตัว</td></tr><tr><td>Terminator</td><td>ต้องมี <strong>120Ω</strong> ที่ปลาย bus ทั้งสองข้าง</td></tr><tr><td>Pin</td><td>RX=GPIO1, TX=GPIO2 — <strong>fixed</strong> บน ESP32-C3</td></tr><tr><td>ไฟเลี้ยง</td><td>transceiver ใช้ 3.3V หรือ 5V แล้วแต่รุ่น</td></tr></tbody></table></div>
+<h2>ข้อควรระวัง</h2>
+<ul><li><code>machine.CAN</code> มีเฉพาะบาง port ของ MicroPython — ถ้า import ไม่ได้จะ <code>RuntimeError</code></li><li>สายส่งต้องต่อผ่าน transceiver เสมอ อย่าต่อ GPIO ตรงเข้าสายบัส</li><li><code>error_counters()</code> คืนค่า 0 เสมอ — ใช้ <code>bus_state()</code> ในการตรวจสุขภาพบัสแทน</li><li>บอดทุกโหนดต้องใช้ baudrate ตรงกัน</li><li>frame จำกัด 8 bytes ต่อตัว (data เกินจะ <code>ValueError</code>)</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>uart.uart_driver.FrameParser</code> — ใช้แนวคิด frame/CRC กับโปรโตคอลอื่น</li><li><code>wifi</code> — หากต้องการ forward ข้อมูล CAN ขึ้น cloud</li><li>ตัวอย่างเต็มใน <code>src/main/examples/audio_can_example.py</code></li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "../";</script>
+<script src="../assets/js/search-index.js"></script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

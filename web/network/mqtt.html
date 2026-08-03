@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MQTT — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="MQTT Client — publish/subscribe พร้อม auto-reconnect, QoS 0/1 และ config-driven">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="../getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="ble.html">📶 BLE Manager</a>
+<a class="nav-link active" href="mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="../cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="../sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="../display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="../output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="../input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="../p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="../audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="../io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="../io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="../storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="../system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="../security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="../crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="../repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>🌐 Network &amp; Communication</span><span>/</span><span>MQTT</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>mqtt</code> เป็น MQTT Client สำหรับส่ง/รับข้อมูลระหว่าง ESP32 กับ broker (เช่น HiveMQ public, Mosquitto, ThingsBoard) เป็นโปรโตคอล Pub/Sub — อุปกรณ์ <strong>publish</strong> ไปที่ topic และ <strong>subscribe</strong> topic ที่สนใจ บนนี้มี default broker เป็น <code>broker.hivemq.com</code> port 1883</p>
+<p>แนวคิดหลัก:</p>
+<ul><li><code>connect()</code> สร้าง connection + subscribe topic ที่ค้างไว้ให้อัตโนมัติ</li><li><code>publish()</code> มี auto-reconnect ภายใน ถ้ายังไม่ได้เชื่อมต่อ</li><li>Callback รับข้อความได้ 2 ทาง: <code>set_callback()</code> (global) หรือ <code>subscribe(topic, callback)</code> (เฉพาะ topic)</li><li>รับรองทั้ง <code>str</code> และ <code>bytes</code> ใน topic/payload อัตโนมัติ</li></ul>
+<h2>การติดตั้ง / import</h2>
+<p>ต้องมีไลบรารี <code>umqtt.robust</code> หรือ <code>umqtt.simple</code> ในตัว MicroPython (ปกติมีมาให้) ก่อน:</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from mqtt.mqttmanager import MQTTManager</code></pre></div>
+<h2>Constructor</h2>
+<div class="table-wrap"><table><thead><tr><th>พารามิเตอร์</th><th>ค่าเริ่มต้น</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>client_id</code></td><td><code>"esp32"</code></td><td>ID ไคลเอนต์ (ไม่ควรซ้ำกันบน broker เดียวกัน)</td></tr><tr><td><code>broker</code></td><td><code>"broker.hivemq.com"</code></td><td>ที่อยู่ broker</td></tr><tr><td><code>port</code></td><td><code>1883</code></td><td>พอร์ต (1883=ไม่เข้ารหัส, 8883=TLS)</td></tr><tr><td><code>user</code> / <code>password</code></td><td><code>None</code></td><td>ใช้กับ broker ที่ต้อง auth</td></tr><tr><td><code>keepalive</code></td><td><code>60</code></td><td>วินาที heartbeat</td></tr><tr><td><code>config_file</code></td><td><code>"mqtt_config.json"</code></td><td>ไฟล์ config (โหลดทับ constructor)</td></tr></tbody></table></div>
+<h2>ตาราง API</h2>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>set_callback(callback)</code></td><td>ตั้ง handler รับข้อความทุก topic</td><td><code>callback(topic, msg)</code></td><td>—</td><td>ก่อน <code>connect()</code> หรือ <code>subscribe()</code></td></tr><tr><td><code>connect(clean_session)</code></td><td>เชื่อมต่อ broker</td><td><code>clean_session: bool=True</code></td><td><code>bool</code></td><td>เรียกก่อน publish/subscribe</td></tr><tr><td><code>disconnect()</code></td><td>ตัดการเชื่อมต่อ</td><td>—</td><td>—</td><td>เรียกตอนจบ</td></tr><tr><td><code>publish(topic, payload, retain, qos)</code></td><td>ส่งข้อมูล</td><td><code>topic</code>, <code>payload</code> (str/bytes), <code>retain: bool=False</code>, <code>qos: 0/1</code></td><td><code>bool</code></td><td>auto-reconnect ถ้ายังไม่เชื่อมต่อ</td></tr><tr><td><code>subscribe(topic, callback, qos)</code></td><td>รับข้อมูลจาก topic</td><td><code>topic</code>, <code>callback(t, m)</code>, <code>qos: 0</code></td><td>—</td><td>เก็บไว้และ resubscribe หลัง reconnect</td></tr><tr><td><code>check_msg()</code></td><td>เช็คข้อความแบบ non-blocking</td><td>—</td><td><code>bool</code></td><td>เรียกวนในลูปหลัก</td></tr><tr><td><code>wait_msg()</code></td><td>รอข้อความ block</td><td>—</td><td><code>msg</code> หรือ <code>None</code></td><td>ใช้แทน check_msg เมื่อต้องการบล็อก</td></tr><tr><td><code>reconnect()</code></td><td>เชื่อมต่อใหม่</td><td>—</td><td><code>bool</code></td><td>ลอง 3 ครั้ง ห่างกัน <code>reconnect_interval</code></td></tr><tr><td><code>loop_forever(sleep_ms)</code></td><td>ลูปตลอดไป: เช็ค msg + reconnect</td><td><code>sleep_ms=100</code></td><td>ไม่คืนค่า (บล็อก)</td><td>ใช้กับสคริปต์ bot ตัวเดียว</td></tr><tr><td><code>save_config()</code></td><td>บันทึก config ลงไฟล์</td><td>—</td><td><code>bool</code></td><td>หลังแก้ <code>self.config</code></td></tr></tbody></table></div>
+<blockquote>หมายเหตุ: <code>subscribe()</code> ไม่ได้มี <code>unsubscribe()</code> — ถ้าต้องการหยุดรับให้สลับ callback เป็นฟังก์ชันเปล่าหรือตั้ง <code>_subs[topic] = None</code></blockquote>
+<h2>ตัวอย่างการใช้งาน</h2>
+<h3>🟢 พื้นฐาน — ส่งค่าอุณหภูมิ</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from mqtt.mqttmanager import MQTTManager
+
+mqtt = MQTTManager(client_id=&quot;esp32-01&quot;, broker=&quot;broker.hivemq.com&quot;)
+
+if mqtt.connect():
+    mqtt.publish(&quot;esp32/sensor/temp&quot;, &quot;25.5&quot;)
+    mqtt.publish(&quot;esp32/status&quot;, &quot;online&quot;, retain=True)
+    mqtt.disconnect()</code></pre></div>
+<h3>🟡 ใช้งานจริง — subscribe + callback</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from mqtt.mqttmanager import MQTTManager
+
+def on_msg(topic, msg):
+    print(f&quot;📥 {topic}: {msg}&quot;)
+
+def on_led(topic, msg):
+    print(f&quot;💡 คำสั่ง LED: {msg}&quot;)
+
+mqtt = MQTTManager(broker=&quot;broker.hivemq.com&quot;)
+mqtt.set_callback(on_msg)                       # รับทุก topic
+mqtt.subscribe(&quot;esp32/led&quot;, on_led)             # รับเฉพาะ topic นี้
+
+if mqtt.connect():
+    while True:
+        if not mqtt.check_msg():                # False = หลุด → reconnect
+            mqtt.reconnect()</code></pre></div>
+<h3>🔴 ขั้นสูง — async รันร่วมกับงานอื่น</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from mqtt.mqttmanager import MQTTManager
+
+mqtt = MQTTManager(broker=&quot;broker.hivemq.com&quot;)
+
+async def main():
+    if mqtt.connect():
+        for i in range(10):
+            mqtt.publish(&quot;esp32/data&quot;, f&quot;{i}&quot;, qos=1)
+            await asyncio.sleep(1)
+    mqtt.disconnect()
+
+asyncio.run(main())</code></pre></div>
+<h2>การต่อวงจร</h2>
+<p>MQTT เป็นโปรโตคอลซอฟต์แวร์ — ต้องต่อ WiFi/เน็ตเท่านั้น (ใช้ร่วมกับ <code>wifi.WiFiManager</code> ก่อน)</p>
+<div class="table-wrap"><table><thead><tr><th>ข้อ</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>Broker</td><td>ต้องเปิดใช้งานและยอมรับการเชื่อมต่อจากสาธารณะ/จากเครือข่าย</td></tr><tr><td>QoS</td><td>0 = fire-and-forget, 1 = ยืนยันอย่างน้อย 1 ครั้ง</td></tr><tr><td>retain</td><td><code>True</code> = broker เก็บค่าสุดท้ายไว้ ส่งให้ subscriber ใหม่ทันที</td></tr></tbody></table></div>
+<h2>ข้อควรระวัง</h2>
+<ul><li><strong><code>loop_forever()</code> เป็น blocking function ธรรมดา</strong> (ไม่ใช่ coroutine) — ถ้าจะรันพร้อมงาน async ต้องใช้ <code>check_msg()</code> ในลูปของคุณเองแทน</li><li>ไม่มีพารามิเตอร์ <code>ssl=</code> ใน constructor ตามที่ README เดิมเขียน — ถ้าต้องการ TLS ต้องสร้าง connection เองหรือใช้ <code>cloud.aws_iot</code></li><li>ต้องมี <code>umqtt</code> module ใน firmware — ตรวจก่อนด้วย <code>import umqtt.robust</code></li><li><code>publish()</code> ถ้ายังไม่เชื่อมต่อจะพยายาม <code>reconnect()</code> ก่อน — ถ้า <code>auto_reconnect=False</code> ใน config จะคืน <code>False</code> ทันที</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>wifi.wifimanager.WiFiManager</code> — เชื่อมต่อเน็ตก่อนเสมอ (รัน <code>keep_alive()</code> ไว้ด้วย)</li><li><code>sensors</code> — อ่านค่าแล้ว publish</li><li><code>cloud.thingsboard.ThingsBoardClient</code> / <code>cloud.adafruit_io.AdafruitIOClient</code> — สร้างบน MQTTManager ภายใน</li><li><code>storage.config_mgr.JsonConfigManager</code> — backend ของ config</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "../";</script>
+<script src="../assets/js/search-index.js"></script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

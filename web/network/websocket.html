@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebSocket — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="WebSocket Client/Server ตาม RFC 6455 — realtime two-way, ping/pong keepalive, async">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="../index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="../getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link active" href="websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="../cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="../sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="../display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="../output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="../input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="../p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="../audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="../io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="../io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="../storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="../system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="../security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="../crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="../repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="../index.html">หน้าแรก</a><span>/</span><span>🌐 Network &amp; Communication</span><span>/</span><span>WebSocket</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>websocket</code> ให้การสื่อสาร <strong>realtime 2 ทาง</strong> ตาม RFC 6455 (ต่างจาก HTTP ที่ request/response ครั้งเดียว) เหมาะกับ dashboard, live data streaming</p>
+<ul><li><strong><code>WebSocketClient</code></strong> — เชื่อมต่อไปยังเซิร์ฟเวอร์ภายนอก (<code>ws://</code> หรือ <code>wss://</code> แบบ TLS) ส่ง/รับข้อความ text/binary, ping/pong อัตโนมัติ</li><li><strong><code>WebSocketServer</code></strong> — เปิดเซิร์ฟเวอร์บน ESP32 รับ client ผ่าน callback <code>on_message</code>/<code>on_binary</code>/<code>on_connect</code>/<code>on_disconnect</code></li><li><strong><code>WebSocketClientHandler</code></strong> — ตัวจัดการ connection หนึ่งตัว (ใช้ภายใน server)</li></ul>
+<p>แนวคิดหลัก: ทุกฟังก์ชันเป็น <strong>async</strong> — ต้องรันใน event loop (<code>asyncio.run()</code> หรือ task) client ต้อง mask frame ทุกครั้ง (บังคับตาม spec) ส่วน server ไม่ต้อง mask</p>
+<h2>การติดตั้ง / import</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+from websocket import WebSocketClient, WebSocketServer</code></pre></div>
+<h2>Constructor</h2>
+<div class="table-wrap"><table><thead><tr><th>คลาส</th><th>พารามิเตอร์</th><th>ค่าเริ่มต้น</th><th>ความหมาย</th></tr></thead><tbody><tr><td><code>WebSocketClient</code></td><td><code>url</code>, <code>timeout</code>, <code>ping_interval</code>, <code>headers</code></td><td><code>10</code>, <code>0</code>, <code>None</code></td><td>URL (<code>ws://</code>/<code>wss://</code>), timeout วินาที, ส่ง ping อัตโนมัติทุกกี่วินาที (0=ปิด), headers พิเศษ</td></tr><tr><td><code>WebSocketServer</code></td><td><code>host</code>, <code>port</code>, <code>max_clients</code></td><td><code>"0.0.0.0"</code>, <code>8080</code>, <code>1</code></td><td>ที่อยู่, พอร์ต, จำนวน client สูงสุด</td></tr><tr><td><code>WebSocketClientHandler</code></td><td><code>conn</code>, <code>addr</code></td><td>—</td><td>ใช้ภายใน server (ไม่ต้องสร้างเอง)</td></tr></tbody></table></div>
+<h2>ตาราง API</h2>
+<h3>WebSocketClient</h3>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>connect()</code></td><td>เชื่อมต่อ + handshake</td><td>—</td><td><code>bool</code></td><td>async — ก่อน send/recv</td></tr><tr><td><code>send(data, opcode)</code></td><td>ส่งข้อมูล</td><td><code>data</code> (str→text, bytes→binary), <code>opcode</code></td><td>—</td><td>async — หลัง <code>connect()</code></td></tr><tr><td><code>send_text(text)</code></td><td>ส่งข้อความ</td><td><code>text: str</code></td><td>—</td><td>async — wrapper ของ <code>send()</code></td></tr><tr><td><code>send_binary(data)</code></td><td>ส่งข้อมูลไบนารี</td><td><code>data: bytes</code></td><td>—</td><td>async</td></tr><tr><td><code>recv(timeout)</code></td><td>รับข้อความ</td><td><code>timeout: float</code> (0=non-block)</td><td><code>(opcode, payload)</code> หรือ <code>None</code></td><td>async — auto ตอบ pong/close</td></tr><tr><td><code>ping(data)</code></td><td>เช็คการเชื่อมต่อ</td><td><code>data: bytes=b""</code></td><td>—</td><td>async</td></tr><tr><td><code>close(code, reason)</code></td><td>ปิดแบบ graceful</td><td><code>code</code> (เช่น 1000), <code>reason</code></td><td>—</td><td>async — เรียกตอนจบ</td></tr><tr><td><code>is_connected</code></td><td>เช็คสถานะ</td><td>—</td><td><code>bool</code></td><td>property</td></tr></tbody></table></div>
+<p>รองรับ <code>async with</code> (auto close) และ <code>async for</code> (วนรับข้อความ)</p>
+<h3>WebSocketServer</h3>
+<div class="table-wrap"><table><thead><tr><th>property/method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th><th>คืนค่าอะไร</th><th>ต้องใช้รวมกับ</th></tr></thead><tbody><tr><td><code>on_connect</code></td><td>กำหนด callback เมื่อมี client เข้า</td><td><code>fn(client)</code></td><td>—</td><td>ตั้งก่อน <code>start()</code></td></tr><tr><td><code>on_message</code></td><td>รับข้อความ text</td><td><code>fn(client, str)</code></td><td>—</td><td>ตั้งก่อน <code>start()</code></td></tr><tr><td><code>on_binary</code></td><td>รับข้อมูลไบนารี</td><td><code>fn(client, bytes)</code></td><td>—</td><td>ตั้งก่อน <code>start()</code></td></tr><tr><td><code>on_disconnect</code></td><td>client หลุด</td><td><code>fn(client)</code></td><td>—</td><td>ตั้งก่อน <code>start()</code></td></tr><tr><td><code>start()</code></td><td>เริ่ม server (ไม่บล็อก)</td><td>—</td><td>—</td><td>async — สร้าง task accept loop</td></tr><tr><td><code>broadcast(message)</code></td><td>ส่งให้ทุก client</td><td><code>str</code></td><td>—</td><td>async — ⚠️ ยังเป็น stub (พิมพ์ log เท่านั้น)</td></tr><tr><td><code>stop()</code> / <code>deinit()</code></td><td>หยุด server</td><td>—</td><td>—</td><td>เรียกตอนจบ</td></tr></tbody></table></div>
+<h2>ตัวอย่างการใช้งาน</h2>
+<h3>🟢 พื้นฐาน — WebSocket Client ไป echo server</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from websocket import WebSocketClient
+
+async def main():
+    ws = WebSocketClient(&quot;ws://echo.websocket.org&quot;)
+    if await ws.connect():
+        await ws.send(&quot;Hello ESP32!&quot;)
+        msg = await ws.recv(timeout=5)
+        print(f&quot;📥 Echo: {msg}&quot;)
+        await ws.close()
+
+asyncio.run(main())</code></pre></div>
+<h3>🟡 ใช้งานจริง — async for รับข้อความต่อเนื่อง</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from websocket import WebSocketClient
+
+async def main():
+    async with WebSocketClient(&quot;ws://echo.websocket.org&quot;, ping_interval=30) as ws:
+        await ws.connect()
+        await ws.send_text(&quot;เริ่มส่งข้อมูล&quot;)
+
+        async for opcode, payload in ws:   # วนรับจนกว่าจะปิด
+            if opcode == 0x1:              # OP_TEXT
+                print(f&quot;📥 {payload.decode()}&quot;)
+                await ws.send_text(&quot;ok&quot;)
+
+asyncio.run(main())</code></pre></div>
+<h3>🔴 ขั้นสูง — WebSocket Server บน ESP32</h3>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from websocket import WebSocketServer
+
+srv = WebSocketServer(port=8080)
+
+def on_connect(client):
+    print(&quot;✅ client เชื่อมต่อ&quot;)
+
+def on_message(client, text):
+    print(f&quot;📥 {text}&quot;)
+    asyncio.create_task(client.send_text(f&quot;echo: {text}&quot;))
+
+def on_disconnect(client):
+    print(&quot;❌ client หลุด&quot;)
+
+async def main():
+    srv.on_connect = on_connect
+    srv.on_message = on_message
+    srv.on_disconnect = on_disconnect
+    await srv.start()
+    print(&quot;✅ WebSocket server บน ws://&lt;IP&gt;:8080&quot;)
+
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        srv.stop()
+
+asyncio.run(main())</code></pre></div>
+<h2>การต่อวงจร</h2>
+<p>เป็นซอฟต์แวร์ล้วน — ต้องต่อ WiFi/เน็ต</p>
+<h2>ข้อควรระวัง</h2>
+<ul><li><strong><code>WebSocketServer.broadcast()</code> ยังเป็น stub</strong> — แค่พิมพ์ log ไม่ส่งจริง (ออกแบบ single-client) ถ้าต้องการส่งไป client ให้เก็บ <code>client</code> จาก callback <code>on_connect</code> ไว้ใช้เอง</li><li>Server <code>listen(1)</code> — รองรับ client ทีละตัวต่อเนื่อง (เมื่อตัวเดิมหลุดก็รับตัวใหม่)</li><li>payload เกิน 64KB ใช้ extended length (127) — แนะนำให้ fragment เป็นชิ้นเล็กกว่า 64KB</li><li><code>recv(timeout=0)</code> non-blocking — ถ้าไม่มีข้อมูลคืน <code>None</code> ทันที</li><li>wss (client) ต้องมี module <code>ssl</code>/<code>ussl</code></li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>wifi.wifimanager.WiFiManager</code> — เชื่อมต่อเน็ตก่อน</li><li><code>http.httpserver.HTTPServer</code> — serve หน้าเว็บฝั่งที่ client ใช้เชื่อม WebSocket ไปหา ESP32</li><li><code>sensors</code> / <code>output</code> — สตรีมค่าเซ็นเซอร์หรือรับคำสั่งควบคุมแบบ realtime</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "../";</script>
+<script src="../assets/js/search-index.js"></script>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

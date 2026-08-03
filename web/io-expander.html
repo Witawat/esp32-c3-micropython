@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I/O Expanders — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="ขยายขา GPIO ผ่าน I2C — PCF8574 (8-bit), MCP23017 (16-bit), PCA9685 (PWM 16 ช่อง)">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link active" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🔌 I/O Expander</span><span>/</span><span>I/O Expanders</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>io_expander</code> มีไดรเวอร์ <strong>3 ตัว</strong> สำหรับขยายขา I/O เมื่อ GPIO ของ ESP32 ไม่พอ ผ่าน I2C (ใช้บัสเดียวกับเซนเซอร์ได้):</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>ชิป</th><th>ขยายอะไร</th><th>Address</th></tr></thead><tbody><tr><td><code>pcf8574.py</code></td><td>PCF8574 / PCF8574A</td><td>8-bit I/O (อ่าน/เขียนทั้ง bit และ byte)</td><td>0x20–0x27 / 0x38–0x3F</td></tr><tr><td><code>mcp23017.py</code></td><td>MCP23017</td><td>16-bit I/O (2 port) + interrupt</td><td>0x20–0x27</td></tr><tr><td><code>pca9685.py</code></td><td>PCA9685</td><td><strong>16 ช่อง PWM 12-bit</strong> (servo/LED)</td><td>0x40–0x7F</td></tr></tbody></table></div>
+<p>ทุกตัวรับ <code>machine.I2C</code> instance ตัวสำเร็จรูป (สร้างเอง หรือจาก <code>i2c</code> lib)</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+import machine
+from io_expander.pcf8574 import PCF8574
+from io_expander.mcp23017 import MCP23017
+from io_expander.pca9685 import PCA9685
+
+i2c = machine.I2C(0, sda=machine.Pin(21), scl=machine.Pin(22), freq=400000)</code></pre></div>
+<hr>
+<h2>PCF8574 — 8-bit I/O</h2>
+<p><code>PCF8574(i2c, address=0x27, initial_state=0xFF)</code> — 0xFF = ทุก pin HIGH ตอนเริ่ม</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>write_byte(value)</code></td><td>เขียน 8 pins พร้อมกัน</td><td>0x00–0xFF</td></tr><tr><td><code>read_byte()</code></td><td>อ่าน 8 pins</td><td><code>int</code> 0–255</td></tr><tr><td><code>set_bit(bit, value)</code></td><td>ตั้ง 1 pin</td><td>bit 0–7, <code>True</code>=HIGH</td></tr><tr><td><code>get_bit(bit)</code></td><td>อ่าน 1 pin</td><td><code>bool</code></td></tr><tr><td><code>toggle_bit(bit)</code></td><td>สลับ 1 pin</td><td>—</td></tr><tr><td><code>set_mask(mask, value)</code></td><td>เขียนเฉพาะ bit ที่ mask</td><td>เช่น mask 0x0F = ครึ่งล่าง</td></tr><tr><td><code>pulse_bit(bit, duration_ms=10)</code></td><td>ส่ง pulse HIGH→LOW</td><td>—</td></tr><tr><td><code>state</code> (property)</td><td>ค่า output ปัจจุบัน</td><td><code>int</code></td></tr><tr><td><code>deinit()</code></td><td>คืนค่าเป็น 0xFF</td><td>—</td></tr></tbody></table></div>
+<p><strong>Note:</strong> <code>set_bit</code>/<code>get_bit</code>/<code>toggle_bit</code>/<code>set_mask</code> ใช้ Read-Modify-Write — จะ <code>read_byte()</code> ก่อนทุกครั้ง ดังนั้น pin ที่เป็น input จะอ่านได้ด้วย แต่ต้องตั้ง bit output ของ pin นั้นเป็น HIGH (1) ก่อน (ตามโครงสร้าง PCF8574)</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">pcf = PCF8574(i2c, address=0x27)
+pcf.set_bit(0, True)      # P0 = HIGH
+pcf.write_byte(0xAA)      # 10101010</code></pre></div>
+<p>ตัวอย่างการใช้งานจริง: <strong>LCD backpack</strong> — <code>pcf.write_byte(0x08)</code> เปิด backlight (เหมือนที่ <code>display.lcd_i2c</code> ใช้)</p>
+<h2>MCP23017 — 16-bit I/O + Interrupt</h2>
+<p><code>MCP23017(i2c, address=0x20)</code> — pin 0–7 = PORTA, pin 8–15 = PORTB</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>set_pin_mode(pin, mode, pull_up=False)</code></td><td>ตั้ง input/output + pull-up (<code>mode='input'/'output'</code>)</td></tr><tr><td><code>write_pin(pin, value)</code> / <code>read_pin(pin)</code></td><td>เขียน/อ่าน 1 pin (0–15)</td></tr><tr><td><code>write_port_a(v)</code> / <code>write_port_b(v)</code></td><td>เขียนทั้ง port (8 bit)</td></tr><tr><td><code>read_port_a()</code> / <code>read_port_b()</code></td><td>อ่านทั้ง port</td></tr><tr><td><code>write_all(value)</code> / <code>read_all()</code></td><td>เขียน/อ่าน 16 bits พร้อมกัน</td></tr><tr><td><code>enable_interrupt(pin, enabled=True)</code></td><td>เปิด interrupt-on-change ราย pin</td></tr><tr><td><code>get_interrupt_flags()</code></td><td><code>(intfa, intfb)</code> — pin ไหน trigger</td></tr><tr><td><code>get_interrupt_capture()</code></td><td><code>(capture_a, capture_b)</code> — ค่า GPIO ตอน interrupt</td></tr><tr><td><code>set_mirror_interrupt(mirror=True)</code></td><td>INTA/INTB ส่งค่าเดียวกัน</td></tr><tr><td><code>deinit()</code></td><td>คืนทุก pin เป็น input</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">mcp = MCP23017(i2c, address=0x20)
+mcp.set_pin_mode(0, &#x27;output&#x27;)
+mcp.write_pin(0, True)
+val = mcp.read_pin(8)   # อ่าน GPB0</code></pre></div>
+<p><strong>ใช้ interrupt:</strong> ต่อ <code>INTA</code>/<code>INTB</code> → GPIO ESP32, ตั้ง <code>enable_interrupt(pin)</code>, แล้วอ่าน flags ว่า pin ไหนเปลี่ยน</p>
+<h2>PCA9685 — 16-channel PWM (Servo/LED)</h2>
+<p><code>PCA9685(i2c, address=0x40)</code> — oscillator 25MHz, PWM 12-bit (0–4095)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>set_freq(freq)</code></td><td>ตั้งความถี่ PWM</td><td>24–1526 Hz (servo ใช้ 50Hz)</td></tr><tr><td><code>set_pwm(channel, on, off)</code></td><td>ตั้ง timing โดยตรง</td><td>channel 0–15, on/off = 0–4095</td></tr><tr><td><code>set_duty(channel, percent)</code></td><td>duty เป็น %</td><td>0.0–100.0</td></tr><tr><td><code>set_pulse_us(channel, us)</code></td><td>pulse width µs (<strong>สำหรับ servo</strong>)</td><td>เช่น 1500 = กลาง</td></tr><tr><td><code>all_off()</code> / <code>all_on()</code></td><td>ปิด/เปิดทุกช่อง</td><td>—</td></tr><tr><td><code>reset()</code> / <code>deinit()</code></td><td>รีเซ็ต / ปิด+sleep</td><td>—</td></tr><tr><td><code>freq</code> (property)</td><td>ความถี่ปัจจุบัน</td><td><code>float</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">pwm = PCA9685(i2c, address=0x40)
+pwm.set_freq(50)                # 50Hz สำหรับ servo
+pwm.set_duty(0, 7.5)            # 7.5% = servo กลาง
+pwm.set_pulse_us(0, 1500)       # หรือระบุเป็น µs</code></pre></div>
+<p><strong>การต่อ:</strong> <code>V+</code> → 5–6V แยก (ไฟ servo), <code>OE</code> → GND (เปิด output) หรือ GPIO; สายไฟของ servo กินกระแสสูง อย่าใช้ไฟจาก ESP32</p>
+<hr>
+<h2>สรุปการเลือกใช้</h2>
+<ul><li><strong>แค่เพิ่ม GPIO อ่าน/เขียน 8 ขา:</strong> PCF8574 (ถูกสุด)</li><li><strong>เพิ่ม 16 ขา + interrupt:</strong> MCP23017</li><li><strong>ควบคุม servo/LED หลายช่อง:</strong> PCA9685 (16 ช่อง PWM)</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>display.lcd_i2c</code> — ใช้ PCF8574 เป็น backpack ภายใน</li><li><code>input</code> — ขยายขาให้ปุ่ม/encoder หลายตัว</li><li><code>output</code> — ขยายช่อง relay/LED</li><li><code>i2c</code> — จัดการบัส I2C รวมศูนย์</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

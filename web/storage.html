@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storage — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="จัดการข้อมูลคงอยู่ — JSON config, file logger, microSD card">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link active" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>💾 Storage</span><span>/</span><span>Storage</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>storage</code> มีตัวช่วย <strong>3 ตัว</strong> สำหรับเก็บข้อมูลให้คงอยู่ (survive รีบูต) ทั้งใน flash และ microSD:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>คลาส</th><th>ใช้เก็บอะไร</th></tr></thead><tbody><tr><td><code>config_mgr.py</code></td><td><code>JsonConfigManager</code></td><td>การตั้งค่าเป็น JSON (เช่น WiFi config, settings)</td></tr><tr><td><code>logger.py</code></td><td><code>FileLogger</code></td><td>บันทึก log ลงไฟล์ + log rotation</td></tr><tr><td><code>sdcard_mgr.py</code></td><td><code>SDCardManager</code></td><td>mount/จัดการไฟล์บน microSD ผ่าน SPI</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)</code></pre></div>
+<hr>
+<h2>JsonConfigManager — ไฟล์ config แบบ JSON</h2>
+<p><code>JsonConfigManager(path, auto_create=True)</code> — จัดการ config กลางให้ทุกโมดูลใช้ร่วมกันได้</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>exists()</code></td><td>ตรวจว่ามีไฟล์แล้วหรือยัง</td><td><code>bool</code></td></tr><tr><td><code>load(default=None)</code></td><td>โหลด config (ถ้าไม่มีไฟล์และ <code>auto_create=True</code> จะสร้างจาก default)</td><td><code>dict</code></td></tr><tr><td><code>save(data)</code></td><td>เขียนไฟล์ทั้งไฟล์ (เขียนลง <code>.tmp</code> ก่อนแล้ว rename — กันไฟล์เสียกลางคัน)</td><td><code>bool</code></td></tr><tr><td><code>update(patch, default=None)</code></td><td>โหลด + ผสาน key ที่ระบุ + บันทึก</td><td><code>dict</code></td></tr><tr><td><code>get(key, default=None)</code></td><td>อ่านค่า key เดียว</td><td>ค่าใน config</td></tr><tr><td><code>set(key, value)</code></td><td>ตั้งค่า key เดียว</td><td><code>bool</code></td></tr><tr><td><code>delete_key(key)</code></td><td>ลบ key</td><td><code>bool</code></td></tr><tr><td><code>reset(data=None)</code></td><td>เขียน config ใหม่จาก dict (ว่างถ้าไม่ระบุ)</td><td><code>bool</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from storage.config_mgr import JsonConfigManager
+
+cfg = JsonConfigManager(&#x27;/config.json&#x27;)
+cfg.set(&#x27;wifi_ssid&#x27;, &#x27;MyNetwork&#x27;)
+ssid = cfg.get(&#x27;wifi_ssid&#x27;, &#x27;esp32-default&#x27;)
+cfg.update({&#x27;wifi_pass&#x27;: &#x27;secret&#x27;, &#x27;brightness&#x27;: 80})</code></pre></div>
+<h2>FileLogger — เขียน log ลงไฟล์ + rotation</h2>
+<p><code>FileLogger(file_path='app.log', level=LEVEL_INFO, max_bytes=128*1024, backup_count=2)</code> — เขียนเป็นบรรทัดแบบ <code>[เวลา] ระดับ ข้อความ</code> และ rotate เองเมื่อไฟล์โตเกิน</p>
+<div class="table-wrap"><table><thead><tr><th>ระดับ (constant)</th><th>ค่า</th></tr></thead><tbody><tr><td><code>LEVEL_DEBUG</code> / <code>LEVEL_INFO</code> / <code>LEVEL_WARN</code> / <code>LEVEL_ERROR</code></td><td>10 / 20 / 30 / 40</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>set_level(level)</code></td><td>กรองเฉพาะระดับที่สำคัญกว่า</td></tr><tr><td><code>debug(msg)</code> / <code>info(msg)</code> / <code>warn(msg)</code> / <code>error(msg)</code></td><td>เขียน log ตามระดับ (ข้อความต่ำกว่าระดับที่ตั้งไว้จะไม่เขียน)</td></tr><tr><td><code>log(level, msg)</code></td><td>เขียนโดยระบุระดับเอง</td></tr></tbody></table></div>
+<p><strong>Log rotation:</strong> เมื่อไฟล์โตถึง <code>max_bytes</code> จะเลื่อน <code>app.log → app.log.1 → app.log.2</code> แล้วเริ่มไฟล์ใหม่ — เหมือน logrotate ของ Linux เก็บ <code>backup_count</code> ไฟล์เก่า</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from storage.logger import FileLogger
+
+log = FileLogger(&#x27;/app.log&#x27;, level=FileLogger.LEVEL_DEBUG)
+log.info(&quot;ระบบเริ่มทำงาน&quot;)
+log.error(&quot;เซนเซอร์อ่านไม่ได้: %s&quot;, ...)   # หรือ log.error(&quot;...&quot;)</code></pre></div>
+<h2>SDCardManager — microSD ผ่าน SPI</h2>
+<p><code>SDCardManager(sck=18, mosi=23, miso=19, cs=5, spi_id=1, baudrate=10_000_000, mount_point='/sd')</code></p>
+<blockquote>⚠️ <strong>Default pins (18/19/23) เป็นของ ESP32 classic</strong> — ESP32-C3 มี GPIO0–21 เท่านั้น (ไม่มี GPIO22/23) ต้องระบุ pin ของบอร์ดเอง เช่น <code>SDCardManager(sck=6, mosi=7, miso=2, cs=10)</code></blockquote>
+<p><strong>ต้องมีไฟล์ <code>sdcard.py</code> (driver ของ MicroPython) ในระบบ</strong> มิฉะนั้น <code>mount()</code> จะคืน <code>False</code></p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>mount()</code></td><td>mount การ์ดเข้ากับ <code>/sd</code></td><td><code>bool</code></td></tr><tr><td><code>umount()</code></td><td>unmount + ปิด SPI</td><td>—</td></tr><tr><td><code>is_mounted</code> (property)</td><td>ตรวจว่ามี mount อยู่</td><td><code>bool</code></td></tr><tr><td><code>listdir(path='/')</code></td><td>รายชื่อไฟล์/โฟลเดอร์</td><td><code>list</code></td></tr><tr><td><code>exists(path)</code></td><td>ตรวจไฟล์</td><td><code>bool</code></td></tr><tr><td><code>mkdir(path)</code> / <code>remove(path)</code></td><td>สร้างโฟลเดอร์ / ลบไฟล์</td><td>—</td></tr><tr><td><code>read_text(path)</code> / <code>write_text(path, text)</code> / <code>append_text(path, text)</code></td><td>อ่าน/เขียน/ต่อท้ายข้อความ</td><td><code>str</code> / —</td></tr><tr><td><code>free_bytes()</code> / <code>total_bytes()</code></td><td>เนื้อที่ว่าง / ทั้งหมด</td><td><code>int</code></td></tr><tr><td><code>info()</code></td><td><code>dict</code> สรุปสถานะ (mounted, mount_point, total/free)</td><td><code>dict</code></td></tr></tbody></table></div>
+<p>Path แบบไม่มี <code>/</code> นำหน้า จะต่อกับ mount point ให้อัตโนมัติ (เช่น <code>listdir('logs')</code> = <code>/sd/logs</code>)</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from storage.sdcard_mgr import SDCardManager
+
+sd = SDCardManager(sck=18, mosi=23, miso=19, cs=5)
+if sd.mount():
+    sd.write_text(&#x27;logs/data.txt&#x27;, &#x27;hello\n&#x27;)
+    print(sd.read_text(&#x27;logs/data.txt&#x27;))
+    print(&quot;ว่าง&quot;, sd.free_bytes(), &quot;bytes&quot;)
+    sd.umount()</code></pre></div>
+<p><strong>การต่อ microSD (ตัวอย่างพิน C3):</strong> VCC→3.3V (ห้าม 5V), GND→GND, SCK/MOSI/MISO/CS ต่อตามที่ระบุใน <code>SDCardManager</code> — บน C3 ตัวอย่างใช้ <code>sck=6, mosi=7, miso=2, cs=10</code> (ปรับตามบอร์ด)</p>
+<hr>
+<h2>สรุปการเลือกใช้</h2>
+<ul><li><strong>เก็บการตั้งค่า:</strong> <code>JsonConfigManager</code> (JSON อ่านง่าย แก้บนเครื่องได้)</li><li><strong>บันทึกเหตุการณ์/error:</strong> <code>FileLogger</code> (rotation กัน flash เต็ม)</li><li><strong>ไฟล์ใหญ่/การ์ดถอดได้:</strong> <code>SDCardManager</code> (SD ผ่าน SPI)</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>system.sysinfo</code> — ดูพื้นที่ว่าง flash ก่อนเขียน</li><li><code>network</code> / <code>cloud</code> — เก็บ config + log ออฟไลน์แล้วค่อยอัปโหลด</li><li><code>security.secret_store</code> — ถ้าอยากเข้ารหัสข้อมูลสำคัญ แทนการเก็บ plaintext</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

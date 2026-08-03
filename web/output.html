@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outputs &amp; Actuators — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="อุปกรณ์เอาต์พุต 12 ตัว — มอเตอร์, Servo, Relay, LED, Buzzer, IR Remote">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link active" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>⚙️ Output / Actuator</span><span>/</span><span>Outputs &amp; Actuators</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>output</code> มีไดรเวอร์ <strong>12 ตัว</strong> ควบคุมอุปกรณ์เอาต์พุต แบ่งตามประเภท:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>อุปกรณ์</th><th>Interface</th></tr></thead><tbody><tr><td><code>stepper.py</code></td><td>28BYJ-48 + ULN2003</td><td>GPIO 4 ขา (unipolar)</td></tr><tr><td><code>stepper_a4988.py</code> / <code>stepper_drv8825.py</code></td><td>NEMA17 + A4988 / DRV8825</td><td>STEP/DIR + MS</td></tr><tr><td><code>stepper_tmc2208.py</code></td><td>NEMA17 + TMC2208/2209</td><td>STEP/DIR + UART</td></tr><tr><td><code>stepper_tmc5160.py</code></td><td>NEMA17 + TMC5160 (ใหญ่)</td><td>STEP/DIR + SPI</td></tr><tr><td><code>servo.py</code></td><td>SG90 / MG996R</td><td>PWM 50Hz</td></tr><tr><td><code>relay.py</code></td><td>Relay 1–8 ช่อง</td><td>GPIO</td></tr><tr><td><code>dc_motor.py</code></td><td>L298N / L9110</td><td>PWM + GPIO</td></tr><tr><td><code>pwm_led.py</code></td><td>LED / RGB LED</td><td>PWM</td></tr><tr><td><code>neopixel_ctrl.py</code></td><td>WS2812B / SK6812</td><td>GPIO (neopixel)</td></tr><tr><td><code>buzzer.py</code></td><td>Active / Passive Buzzer</td><td>GPIO / PWM</td></tr><tr><td><code>ir_remote.py</code></td><td>IR TX / RX (NEC, Sony, RC5, RAW)</td><td>PWM / IRQ</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+from output.servo import Servo
+from output.relay import Relay</code></pre></div>
+<hr>
+<h2>Stepper Motors</h2>
+<h3>StepperULN2003 — 28BYJ-48</h3>
+<p><code>StepperULN2003(pins, half_step=True, delay_us=1200)</code> — <code>pins</code> = list 4 GPIO <code>[IN1, IN2, IN3, IN4]</code></p>
+<ul><li><code>half_step=True</code> → 4096 steps/รอบ, <code>False</code> → 2048 (เร็วแต่หยาบ)</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>steps(count, direction=1)</code></td><td>หมุนทีละ step</td><td>direction: 1=CW, -1=CCW</td></tr><tr><td><code>rotate(degrees, direction=1)</code></td><td>หมุนเป็นองศา</td><td>degrees = องศา</td></tr><tr><td><code>revolution(turns=1.0, direction=1)</code></td><td>หมุนเต็มรอบ</td><td>turns = จำนวนรอบ</td></tr></tbody></table></div>
+<p>ข้อควรระวัง: <strong>อย่าให้ VCC แรงดันเดียวกับ ESP32 ถ้าใช้ไฟ 5V แยก</strong> — มอเตอร์กินไฟสูง (28BYJ-48 ~150mA/รอบ coil) ควรใช้แหล่งจ่ายแยก</p>
+<h3>STEP/DIR Drivers — A4988, DRV8825</h3>
+<p><strong>A4988:</strong> <code>StepperA4988(step_pin, dir_pin, en_pin=None, ms1_pin=None, ms2_pin=None, ms3_pin=None, sleep_pin=None, microstep=1, step_delay_us=500)</code> — microstep: 1, 2, 4, 8, 16 <strong>DRV8825:</strong> <code>StepperDRV8825(step_pin, dir_pin, en_pin=None, m0_pin=None, m1_pin=None, m2_pin=None, sleep_pin=None, reset_pin=None, fault_pin=None, microstep=1, step_delay_us=500)</code> — microstep: 1–32</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>enable()</code> / <code>disable()</code></td><td>เปิด/ปิด driver (ลดกระแสตอนไม่ใช้)</td></tr><tr><td><code>sleep()</code> / <code>wake()</code></td><td>sleep mode / ตื่น</td></tr><tr><td><code>set_microstep(n)</code></td><td>เปลี่ยน microstep (ต้องต่อ MS/M0-M2 pins)</td></tr><tr><td><code>steps(count, cw=True)</code></td><td>หมุน n steps (cw=True=ตามเข็ม)</td></tr><tr><td><code>rotate(degrees, cw=True)</code></td><td>หมุนองศา</td></tr><tr><td><code>revolution(turns=1.0, cw=True)</code></td><td>หมุนรอบ</td></tr><tr><td><code>deinit()</code></td><td>คืน GPIO</td></tr></tbody></table></div>
+<p><strong>เพิ่มเฉพาะ DRV8825:</strong> <code>reset()</code>, <code>has_fault</code> (property, True เมื่อ FAULT active LOW)</p>
+<p>ข้อควรระวัง: VMOT ต่างกัน (A4988: 8–35V, DRV8825: 8.2–45V) — ปรับกระแสด้วย VREF ตามสเปคมอเตอร์; <code>microstep</code> ที่ระบุต้องต่อขา MS ให้ครบ</p>
+<h3>StepperTMC2208 / TMC2209</h3>
+<p><code>StepperTMC2208(step_pin, dir_pin, uart_tx, en_pin=None, uart_id=1, uart_addr=0, step_delay_us=500)</code> <code>StepperTMC2209(step_pin, dir_pin, uart_tx, en_pin=None, diag_pin=None, uart_id=1, uart_addr=0, step_delay_us=500)</code> — เพิ่ม StallGuard4/CoolStep/sensorless homing</p>
+<p>การต่อ UART single-wire: <code>ESP32 TX ──┬── 1kΩ ── PDN_UART</code> และ <code>└── 10kΩ ── ESP32 RX</code> (อ่าน response)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>enable()</code> / <code>disable()</code> / <code>deinit()</code></td><td>เปิด/ปิด</td><td>—</td></tr><tr><td><code>set_current(rms_ma, hold_percent=50)</code></td><td><strong>ตั้งกระแส</strong></td><td>mA เช่น 800 = 0.8A</td></tr><tr><td><code>set_microstep(n)</code></td><td>microstep 1–256</td><td>ผ่าน CHOPCONF register</td></tr><tr><td><code>set_stealthchop(enable=True)</code></td><td>StealthChop (เงียบ) / SpreadCycle</td><td>—</td></tr><tr><td><code>steps/rotate/revolution(...)</code></td><td>ขยับมอเตอร์</td><td>เหมือน A4988</td></tr><tr><td><code>write_reg(reg, value)</code> / <code>read_reg(reg)</code></td><td>เขียน/อ่าน register</td><td>—</td></tr></tbody></table></div>
+<p><strong>TMC2209 เพิ่ม:</strong> <code>enable_stallguard(threshold=0)</code>, <code>read_stallguard()</code>, <code>is_stalled()</code>, <code>enable_coolstep(threshold=400, semin=5, semax=2)</code>, <code>homing(direction=-1, stall_threshold=10, max_steps=10000)</code> — sensorless homing</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">motor = StepperTMC2208(step_pin=14, dir_pin=12, uart_tx=4)
+motor.enable()
+motor.set_current(800)
+motor.rotate(360)</code></pre></div>
+<h3>StepperTMC5160</h3>
+<p><code>StepperTMC5160(step_pin, dir_pin, cs_pin, sck_pin, mosi_pin, miso_pin=None, en_pin=None, spi_id=1, step_delay_us=500)</code> — SPI Mode 3 (CPOL=1, CPHA=1), 1MHz</p>
+<ul><li><strong>ต้องต่อ MISO ถ้าจะอ่าน register</strong> (read_reg จะ <code>OSError</code> ถ้าไม่มี)</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>set_current(rms_ma, hold_percent=50)</code> / <code>set_microstep(n)</code> / <code>set_stealthchop()</code></td><td>เหมือน TMC2208</td></tr><tr><td><code>enable_stallguard(threshold=0)</code> / <code>read_stallguard()</code></td><td>StallGuard2</td></tr><tr><td><code>move_to(position)</code> / <code>get_position()</code></td><td><strong>ramp generator</strong> — ขยับไปตำแหน่ง absolute (µsteps)</td></tr><tr><td><code>set_ramp(vstart=0, a1=500, v1=50000, amax=500, vmax=200000, dmax=500, d1=500, vstop=10)</code></td><td>ตั้ง motion profile 6 จุด</td></tr><tr><td><code>wait_for_stop(timeout_ms=10000)</code></td><td>รอถึงตำแหน่งเป้า → <code>bool</code></td></tr><tr><td><code>steps/rotate/revolution(...)</code></td><td>โหมด STEP/DIR ปกติ</td></tr></tbody></table></div>
+<p>ข้อควรระวัง: กระแสสูงถึง 20A (external MOSFET) — ต้องการฮีตซิงก์และแหล่งจ่ายใหญ่; ใช้ RAM เยอะกว่าไดรเวอร์อื่น</p>
+<hr>
+<h2>Servo</h2>
+<p><code>Servo(pin, freq=50, min_us=500, max_us=2500, min_angle=-90.0, max_angle=90.0)</code></p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>angle(degrees)</code></td><td>หมุนไปมุม</td><td>clamp อัตโนมัติ min–max</td></tr><tr><td><code>pulse_us(us)</code></td><td>กำหนด pulse width ตรงๆ</td><td>500–2500µs</td></tr><tr><td><code>center()</code></td><td>หมุนไปกลาง</td><td>—</td></tr><tr><td><code>sweep(start=None, end=None, step=1.0, delay_ms=10)</code></td><td>กวาดมุม</td><td>blocking</td></tr><tr><td><code>current_angle</code> (property)</td><td>มุมปัจจุบัน</td><td>float</td></tr><tr><td><code>off()</code> / <code>deinit()</code></td><td>ปิดสัญญาณ / คืน PWM</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">servo = Servo(pin=13)
+servo.angle(90)     # ขวาสุด
+servo.sweep(-90, 90, delay_ms=20)</code></pre></div>
+<p>การต่อ: น้ำตาล/ดำ→GND, แดง→5V, ส้ม/ขาว→GPIO</p>
+<hr>
+<h2>Relay</h2>
+<p><strong>เดี่ยว:</strong> <code>Relay(pin, active_low=True, initial_state=False)</code> — <code>on()</code>, <code>off()</code>, <code>toggle()</code>, <code>is_on</code> (property), <code>timed_on(seconds)</code> (async), <code>pulse(on_sec, off_sec, count=1)</code> (async) <strong>หลายช่อง:</strong> <code>RelayBoard(pins, active_low=True)</code> — <code>on(ch)/off(ch)/toggle(ch)</code>, <code>on_all()/off_all()</code>, <code>set_mask(mask)</code> เช่น <code>0b0101</code> = เปิด ch0+ch2, <code>get_mask()</code>, <code>status()</code> → <code>[bool]</code>, ใช้ <code>board[0]</code> เข้าถึง Relay ได้</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">relay = Relay(pin=16, active_low=True)
+relay.on()
+
+board = RelayBoard(pins=[16, 17, 18, 19])
+board.set_mask(0b0101)</code></pre></div>
+<p>ข้อควรระวัง: โมดูล <strong>Active LOW (IN=0 → ON) พบบ่อยกว่า</strong> — ถ้า logic กลับ เปลี่ยน <code>active_low=False</code>; ควบคุมไฟ AC/โหลดสูง อย่าใช้สายไฟร่วมกับ ESP32</p>
+<hr>
+<h2>DC Motor</h2>
+<p><strong>L298N/TB6612:</strong> <code>DCMotor(pwm_pin, in1_pin, in2_pin, freq=1000, min_duty=0, max_duty=100)</code></p>
+<ul><li><code>forward(speed=100)</code>, <code>backward(speed=100)</code>, <code>speed(pct)</code> (เปลี่ยนความเร็วคงทิศ), <code>stop()</code> (coast), <code>brake()</code> (short brake), <code>current_speed</code></li><li><code>min_duty</code> ใช้เป็น dead-band ป้องกันมอเตอร์คราง</li></ul>
+<p><strong>L9110S:</strong> <code>DCMotorL9110(ia_pin, ib_pin, freq=1000)</code> — ใช้ 2 PWM (<code>ia</code>=หน้า, <code>ib</code>=หลัง), มี <code>forward/backward/stop/deinit</code></p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">motor = DCMotor(pwm_pin=12, in1_pin=14, in2_pin=27)
+motor.forward(80)
+motor.brake()</code></pre></div>
+<hr>
+<h2>LED</h2>
+<h3>PWMLed</h3>
+<p><code>PWMLed(pin, freq=1000, invert=False)</code> — <code>invert=True</code> เมื่อวงจร active LOW (LED+ → 3.3V → GPIO)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>brightness(pct)</code></td><td>ตั้งความสว่าง 0–100%</td></tr><tr><td><code>on()</code> / <code>off()</code></td><td>100% / 0%</td></tr><tr><td><code>fade(start, end, steps=50, duration_ms=1000)</code> (async)</td><td>ค่อยๆ ปรับ</td></tr><tr><td><code>fade_in(ms)</code> / <code>fade_out(ms)</code> (async)</td><td>fade 0→100 / 100→0</td></tr><tr><td><code>blink(on_ms=200, off_ms=200, count=3, brightness_pct=100)</code> (async)</td><td>กระพริบ (count=0 = ไม่หยุด)</td></tr><tr><td><code>breathe(period_ms=2000, steps=100)</code> (async)</td><td>เอฟเฟกต์หายใจ วนตลอด</td></tr><tr><td><code>current_brightness</code></td><td>% ปัจจุบัน</td></tr></tbody></table></div>
+<h3>RGBLed</h3>
+<p><code>RGBLed(r_pin, g_pin, b_pin, freq=1000, invert=False)</code> — <code>invert=True</code> เมื่อ Common Anode</p>
+<ul><li><code>color(r, g, b)</code> (0–255), <code>off()</code>, <code>fade_color(from_rgb, to_rgb, duration_ms=1000, steps=50)</code> (async), <code>deinit()</code></li></ul>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">rgb = RGBLed(r_pin=4, g_pin=5, b_pin=6)
+rgb.color(255, 128, 0)   # ส้ม</code></pre></div>
+<hr>
+<h2>NeoPixel (WS2812B / SK6812)</h2>
+<p><code>NeoPixelController(pin, num_pixels, brightness=1.0, bpp=3)</code> — <code>bpp=4</code> สำหรับ SK6812 RGBW</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>set(index, r, g, b, w=0)</code></td><td>ตั้งสี pixel เดี่ยว</td></tr><tr><td><code>fill(r, g, b, w=0)</code></td><td>เติมทุก pixel</td></tr><tr><td><code>set_range(start, end, r, g, b)</code></td><td>ช่วง pixel</td></tr><tr><td><code>set_brightness(b)</code></td><td>ความสว่าง 0.0–1.0</td></tr><tr><td><code>show()</code></td><td><strong>อัปเดต LED</strong> (ต้องเรียกหลัง set)</td></tr><tr><td><code>clear()</code></td><td>ปิดหมด</td></tr><tr><td><code>rainbow_cycle(wait_ms=20, cycles=1)</code> / <code>color_wipe(r,g,b,wait_ms=50)</code> / <code>theater_chase(...)</code></td><td>เอฟเฟกต์</td></tr><tr><td><code>from_hsv(h, s, v)</code> (static)</td><td>แปลง HSV→RGB</td></tr></tbody></table></div>
+<p>ข้อควรระวัง: ใช้แหล่งจ่าย 5V แยกสำหรับ strip ยาว (LED ละ ~60mA สีขาว) + <strong>level shifter 3.3V→5V</strong> ที่ DIN; <code>set()</code> แล้วต้อง <code>show()</code></p>
+<hr>
+<h2>Buzzer</h2>
+<h3>Buzzer — Active (GPIO on/off)</h3>
+<p><code>Buzzer(pin, active_low=False)</code> — ส่ง HIGH/LOW อย่างเดียว เล่นเสียงเดียว</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>beep(count=1, on_ms=200, off_ms=200)</code></td><td>บี๊บ sync</td></tr><tr><td><code>async_beep(...)</code> (async)</td><td>บี๊บไม่บล็อก</td></tr><tr><td><code>pattern(patterns, repeat=1, gap_ms=500)</code></td><td>เล่นรูปแบบ <code>[(on,off),...]</code></td></tr><tr><td><code>morse_code(message, dot_ms=100, repeat=1)</code></td><td>ส่งรหัสมอร์ส (SOS ฯลฯ)</td></tr><tr><td><code>alarm_sequence(stages=3, base_freq_ms=100, increment_ms=50, repeat=1)</code></td><td>เสียงเตือนค่อยๆ เร็วขึ้น</td></tr></tbody></table></div>
+<h3>PassiveBuzzer — PWM (เล่นโน้ตได้)</h3>
+<p><code>PassiveBuzzer(pin, default_volume=32768)</code> — มี dict <code>NOTES</code> ('C4'..'C6', '-'=พัก)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับค่าอะไร</th></tr></thead><tbody><tr><td><code>tone(freq, duration_ms=0)</code></td><td>เล่นความถี่</td><td>duration=0 = ต่อเนื่อง</td></tr><tr><td><code>note(name, duration_ms=200)</code></td><td>เล่นโน้ต</td><td>เช่น <code>'C4'</code></td></tr><tr><td><code>melody(notes, gap_ms=50, repeat=1, volume=None)</code></td><td>เล่นทำนอง</td><td><code>[('C4',200),('E4',200)]</code></td></tr><tr><td><code>pattern_melody(patterns, gap_ms=100, repeat=1)</code></td><td>ทำนองซับซ้อน</td><td><code>[([('C4',100)],200)]</code></td></tr><tr><td><code>set_volume(vol)</code></td><td>ระดับเสียง</td><td>0–65535</td></tr><tr><td><code>async_tone/async_melody/async_pattern_melody</code></td><td>เวอร์ชัน async</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">bz = PassiveBuzzer(pin=5)
+bz.melody([(&#x27;C4&#x27;, 200), (&#x27;E4&#x27;, 200), (&#x27;G4&#x27;, 400)], repeat=2)</code></pre></div>
+<hr>
+<h2>IR Remote</h2>
+<h3>IRTransmitter</h3>
+<p><code>IRTransmitter(pin, carrier_freq=38000, duty=512)</code> — LED ผ่าน resistor 100Ω</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>send_nec(address, command, repeat=0)</code></td><td>NEC 38kHz (ทีวี/เครื่องเสียง)</td></tr><tr><td><code>send_sony(command, bits=12, address=0)</code></td><td>Sony SIRC 12/15/20-bit</td></tr><tr><td><code>send_rc5(address, command)</code></td><td>Philips RC5</td></tr><tr><td><code>send_raw(pulses, carrier_freq=38000)</code></td><td>RAW (ใช้กับรีโมทแอร์) — <code>[(mark_us,space_us),...]</code></td></tr><tr><td><code>set_carrier(freq)</code> / <code>deinit()</code></td><td>เปลี่ยนความถี่ / ปิด</td></tr></tbody></table></div>
+<h3>IRReceiver</h3>
+<p><code>IRReceiver(pin, nec_callback=None, sony_callback=None, rc5_callback=None, raw_callback=None, buffer_size=200)</code></p>
+<ul><li><code>VS1838/TSOP38238</code>: VOUT→GPIO, VCC→3.3V (active LOW)</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>callback</th></tr></thead><tbody><tr><td><code>capture(timeout_ms=200)</code></td><td>จับ+decode แบบ blocking</td><td>→ <code>bool</code></td></tr><tr><td><code>listen(active_low=True)</code> (async)</td><td>ฟังตลอดแบบ async</td><td>nec: <code>(addr, cmd, pulses)</code>, sony: <code>(cmd, bits, pulses)</code>, raw: <code>(pulses)</code></td></tr><tr><td><code>start_listening()</code> / <code>stop_listening()</code></td><td>เริ่ม/หยุด async task</td><td>—</td></tr><tr><td><code>get_raw_pulses()</code></td><td>RAW ล่าสุด</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">ir = IRTransmitter(pin=17)
+ir.send_nec(address=0x00, command=0x45)</code></pre></div>
+<p>ข้อควรระวัง: RC5 receive ยังเป็น TODO ในโค้ด (decode ได้เฉพาะ NEC + Sony SIRC); การส่งต้องให้ LED พอดีมุมกับตัวรับ</p>
+<hr>
+<h2>สรุปการเลือกใช้</h2>
+<ul><li><strong>หมุนแม่นยำ:</strong> STEP/DIR driver (A4988/DRV8825/TMC2208/TMC5160) → เลือก TMC ถ้าต้องการเงียบ</li><li><strong>หมุนราคาถูก:</strong> 28BYJ-48 + ULN2003</li><li><strong>เปิด/ปิดโหลด:</strong> Relay</li><li><strong>ไฟ/ตกแต่ง:</strong> NeoPixel / RGBLed / PWMLed</li><li><strong>เสียงเตือน:</strong> Active Buzzer / PassiveBuzzer (เล่นเพลงได้)</li><li><strong>ควบคุมเครื่องใช้ไฟฟ้า:</strong> IRTransmitter (NEC)</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>input</code> — ปุ่ม/สวิตช์สั่งงานมอเตอร์หรือ relay</li><li><code>sensors</code> — ตรวจจับแล้วตอบสนอง (เช่น PIR → relay)</li><li><code>cloud</code> / <code>mqtt</code> — สั่งงานอุปกรณ์จากระยะไกล</li><li><code>system.uptime</code> — จับเวลาทำงาน/ตารางเวลา</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

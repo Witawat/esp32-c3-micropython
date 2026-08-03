@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เริ่มต้นใช้งาน — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="วิธี deploy lib ลงบอร์ด ESP32 และตั้งค่า sys.path เพื่อ import ได้ทันที">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link active" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🚀 เริ่มต้นใช้งาน</span><span>/</span><span>เริ่มต้นใช้งาน</span></nav>
+    <article class="prose"><p>หน้านี้อธิบายวิธีนำไลบรารีจาก <code>src/lib/</code> ไปใช้งานจริงบนบอร์ด ESP32 ก่อนเริ่มบทเรียนหมวดอื่น</p>
+<h2>1. โครงสร้างโฟลเดอร์</h2>
+<p>โปรเจกต์มีโครงสร้างหลักดังนี้:</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">esp32-c3/
+├── src/
+│   ├── main.py              ← Entry point หลัก
+│   ├── lib/                 ← ไลบรารีทั้งหมด (29 หมวด)
+│   └── main/examples/       ← ตัวอย่างการใช้งานทุกหมวด
+└── docs/                    ← เอกสารคู่มือนี้</code></pre></div>
+<h2>2. อัปโหลด lib ลงบอร์ด</h2>
+<p>ย้ายโฟลเดอร์ <code>lib/</code> ทั้งหมดไปที่ <code>/lib</code> บน flash ของบอร์ด (ใช้ตัวเดียวกับ <code>/</code> ของไฟล์):</p>
+<div class="code-block"><div class="code-head"><span>bash</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-bash"># วิธีที่ 1: ampy
+ampy --port COM3 put lib /lib
+
+# วิธีที่ 2: rshell
+rshell --port COM3
+mkdir /pyboard/lib
+cp -r lib /pyboard/lib
+
+# วิธีที่ 3: Thonny — เปิดโฟลเดอร์ src/lib แล้วบันทึกทั้งโฟลเดอร์ลงบอร์ด</code></pre></div>
+<h2>3. ตั้งค่า sys.path</h2>
+<p>บนอุปกรณ์ MicroPython โฟลเดอร์ <code>/lib</code> มักอยู่ใน <code>sys.path</code> อยู่แล้ว แต่เพื่อความชัดเจนและกันพลาด ควรเพิ่มใน <code>main.py</code>:</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)</code></pre></div>
+<p>จากนั้น import ตามหมวดได้ทันที:</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from wifi.wifimanager import WiFiManager
+from sensors.dht import DHTSensor
+from mqtt.mqttmanager import MQTTManager
+from system.sysinfo import SysInfo</code></pre></div>
+<h2>4. main.py ตัวอย่างขั้นต่ำ</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+
+import asyncio
+from system.sysinfo import SysInfo
+from wifi.wifimanager import WiFiManager
+from sensors.dht import DHTSensor
+
+WIFI_SSID = &quot;my_wifi&quot;
+WIFI_PASS = &quot;my_password&quot;
+
+async def main():
+    print(f&quot;🔵 Chip ID: {SysInfo.chip_id_hex()}&quot;)
+
+    wifi = WiFiManager()
+    connected = await wifi.connect(ssid=WIFI_SSID, password=WIFI_PASS)
+    print(f&quot;📡 WiFi: {&#x27;✅ เชื่อมต่อ&#x27; if connected else &#x27;❌ ไม่สำเร็จ&#x27;}&quot;)
+
+    dht = DHTSensor(pin=4, model=&#x27;DHT22&#x27;)
+
+    while True:
+        temp, hum = dht.read()
+        if temp is not None:
+            print(f&quot;🌡️ {temp:.1f}°C  💧 {hum:.1f}%&quot;)
+        await asyncio.sleep(5)
+
+asyncio.run(main())</code></pre></div>
+<h2>5. ข้อควรระวังพื้นฐานของ ESP32-C3</h2>
+<div class="table-wrap"><table><thead><tr><th>ข้อ</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>ADC2 ชน WiFi</td><td>ADC2 ของ C3 มีช่องเดียวคือ GPIO5 — ใช้ WiFi พร้อมกันไม่ได้ ใช้ ADC1 (GPIO0–4)</td></tr><tr><td>UART0 = REPL</td><td>UART0 ถูกใช้โดย console/REPL — ใช้ UART1 (GPIO20/21) สำหรับอุปกรณ์ภายนอก</td></tr><tr><td>GPIO0–21 เท่านั้น</td><td>C3 มีแค่ GPIO0–21 (ไม่มี GPIO22/23/25/26/27) — default pin ใน lib หลายตัวเป็นของ ESP32 classic (เช่น SPI <code>sck=18,mosi=19,miso=23</code>, I2C <code>sda=21,scl=22</code>) ต้องระบุ pin ใหม่เสมอ</td></tr><tr><td>DAC ไม่มีบน C3</td><td>C3 มีแค่ ADC (ไม่ใช่ DAC) — โมดูล <code>dac</code> ใช้ได้เฉพาะ ESP32/S2 ที่มี DAC จริง</td></tr><tr><td>Ethernet ไม่มีบน C3</td><td>C3 ไม่มี EMAC/<code>network.LAN</code> — โมดูล <code>ethernet</code> ใช้ได้เฉพาะ ESP32 classic</td></tr><tr><td>UART2 ไม่มีบน C3</td><td>C3 มี 2 UART (UART0/1) — ไดรเวอร์ที่ default <code>uart_id=2</code> (เช่น PMS, TJC) ต้องส่ง <code>uart_id=1</code></td></tr><tr><td>ไฟ 3.3V เท่านั้น</td><td>GPIO ของ ESP32-C3 ไม่ทน 5V — ต้องใช้ level shifter ถ้าต่อกับอุปกรณ์ 5V</td></tr><tr><td>TouchPad</td><td>ESP32-C3 มี touch จริง (TOUCH0–4 = GPIO4–8) — <code>input/touch.py</code> ใช้ได้ แต่เฉพาะ C6 ที่ไม่มี touch</td></tr><tr><td>RAM จำกัด</td><td>ตัวที่ใช้ TLS/cert (เช่น AWS IoT) กิน RAM มาก ควรเช็ค <code>gc.free_mem()</code></td></tr></tbody></table></div>
+<h2>6. ตัวอย่างทั้งหมด</h2>
+<p>ตัวอย่างโค้ดของทุกหมวดอยู่ที่ <code>src/main/examples/</code> เช่น <code>wifi_example.py</code>, <code>sensors_example.py</code>, <code>mqtt_example.py</code>, <code>telegram_example.py</code> — ใช้เป็นจุดเริ่มต้นก่อนเขียนโค้ดจริง</p></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

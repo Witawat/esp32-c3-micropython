@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sensors — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="เซนเซอร์ 21 ตัว — อุณหภูมิ/ความชื้น, ระยะทาง, กระแสไฟฟ้า, คุณภาพอากาศ, ตำแหน่ง GPS, แบตเตอรี่">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link active" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🌡️ Sensors</span><span>/</span><span>Sensors</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>sensors</code> มีไดรเวอร์ <strong>21 ตัว</strong> แบ่งตามวิธีอ่านข้อมูล:</p>
+<div class="table-wrap"><table><thead><tr><th>ประเภท</th><th>สัญญาณ</th><th>ไดรเวอร์</th></tr></thead><tbody><tr><td>1-Wire</td><td><code>onewire</code></td><td><code>ds18x20</code></td></tr><tr><td>I2C</td><td><code>machine.I2C</code></td><td><code>bmp280</code>, <code>mpu6050</code>, <code>ads1115</code>, <code>max30102</code>, <code>ina219</code> (+ <code>battery_monitor</code> โหมด MAX17048)</td></tr><tr><td>ADC (อนาล็อก)</td><td><code>machine.ADC</code></td><td><code>ldr</code>, <code>soil</code>, <code>mq_gas</code>, <code>oh49e</code>, <code>battery_monitor</code></td></tr><tr><td>UART</td><td><code>machine.UART</code></td><td><code>pzem004t</code>, <code>pzem004t_v3</code>, <code>pms7003</code>, <code>pms5003</code>, <code>gps_nmea</code></td></tr><tr><td>Digital GPIO</td><td><code>Pin</code> + IRQ</td><td><code>hcsr04</code>, <code>pir</code>, <code>rcwl0516</code></td></tr></tbody></table></div>
+<p>ใช้ import รูปแบบเดียวกันทุกตัว: <code>from sensors.ชื่อไฟล์ import ชื่อคลาส</code></p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+from sensors.dht import DHTSensor
+from sensors.bmp280 import BMP280</code></pre></div>
+<hr>
+<h2>อุณหภูมิ / ความชื้น</h2>
+<h3>DHTSensor — DHT11 / DHT22</h3>
+<p><code>DHTSensor(pin, model='DHT22')</code> — ค่า <code>MODEL_DHT11</code> / <code>MODEL_DHT22</code> ใน class</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read()</code></td><td>อ่านค่าครั้งเดียว</td><td><code>(temperature_c, humidity)</code> หรือ <code>(None, None)</code> ถ้าอ่านพลาด</td></tr><tr><td><code>read_fahrenheit()</code></td><td>อ่านค่าหน่วยฟาเรนไฮต์</td><td><code>(temp_f, humidity)</code> หรือ <code>(None, None)</code></td></tr><tr><td><code>temperature</code> / <code>humidity</code> (property)</td><td>เรียกได้หลัง <code>read()</code></td><td>ค่าล่าสุดหรือ <code>None</code></td></tr></tbody></table></div>
+<p>ข้อควรระวัง: <strong>กัน DHT ออกจาก I2C/UART บัส</strong> (ความถี่ timing แพ้เซนเซอร์อื่น) — อ่านช้าๆ ทิ้งช่วง ≥ 2 วินาทีต่อครั้ง เพราะโปรโตคอลต้องใช้ timing แม่นยำ</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">dht = DHTSensor(pin=4, model=&#x27;DHT22&#x27;)
+temp, hum = dht.read()
+print(&quot;อุณหภูมิ&quot;, temp, &quot;°C&quot;)</code></pre></div>
+<h3>BMP280 — บารอมิเตอร์/อุณหภูมิ</h3>
+<p><code>BMP280(sda=21, scl=22, address=0x76, freq=400000, i2c=None)</code> — ถ้าไม่ส่ง <code>i2c</code> จะสร้าง <code>machine.I2C(0, ...)</code> เอง</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read()</code></td><td><code>{"temperature": °C, "pressure": Pa, "humidity": %หรือNone}</code></td></tr><tr><td><code>altitude(sea_level_pa=101325.0)</code></td><td>ความสูงโดยประมาณ (เมตร)</td></tr></tbody></table></div>
+<p>ข้อควรระวัง: chip ID <code>0x60</code> = BME280 (มี humidity), <code>0x58</code> = BMP280 (humidity เป็น <code>None</code>) — ถ้าใช้โมดูล BME280 ตัวเดียวกับคลาสนี้ humidity จะอ่านได้ และ <code>address</code> ปกติ <code>0x76</code> (หรือ <code>0x77</code> ถ้า SDO ต่อ HIGH)</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">bmp = BMP280()
+data = bmp.read()
+print(data[&quot;temperature&quot;], &quot;°C /&quot;, data[&quot;pressure&quot;] / 100, &quot;hPa&quot;)</code></pre></div>
+<h3>DS18B20 — Digital Thermometer (1-Wire)</h3>
+<p><code>DS18B20(pin)</code> — รองรับหลายตัวบนบัสเดียวกัน (multi-drop)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>scan()</code></td><td>เริ่มต้น หา ROM ทั้งหมด</td><td><code>list</code> ของ address bytes</td></tr><tr><td><code>read_all()</code></td><td>อ่านทุกตัว</td><td><code>list[(rom_hex, temp_c)]</code></td></tr><tr><td><code>read(index=0)</code></td><td>อ่านตัวที่ <code>index</code></td><td><code>°C</code> หรือ <code>None</code></td></tr><tr><td><code>read_by_rom(rom)</code></td><td>อ่านตัวที่รู้ ROM</td><td><code>°C</code> หรือ <code>None</code></td></tr><tr><td><code>count</code> (property)</td><td>จำนวนตัวบนบัส</td><td><code>int</code></td></tr></tbody></table></div>
+<p>ข้อควรระวัง: <strong>ต้องมี pull-up 4.7kΩ ระหว่าง DQ–VCC</strong> และแต่ละรอบอ่านต้องรอ conversion ~750ms (ตัว lib จัดการเอง)</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">ds = DS18B20(pin=5)
+for rom in ds.scan():
+    print(ds.read_by_rom(rom))</code></pre></div>
+<hr>
+<h2>IMU / ระยะทาง</h2>
+<h3>MPU6050 — Gyroscope + Accelerometer</h3>
+<p><code>MPU6050(sda=21, scl=22, address=0x68, freq=400000, i2c=None, accel_range=0, gyro_range=0)</code></p>
+<ul><li><code>accel_range</code>: 0=±2g, 1=±4g, 2=±8g, 3=±16g</li><li><code>gyro_range</code>: 0=±250, 1=±500, 2=±1000, 3=±2000 °/s</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read_all()</code></td><td><code>{"accel": (x,y,z) g, "gyro": (x,y,z) °/s, "temperature": °C}</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">mpu = MPU6050()
+print(mpu.read_all())</code></pre></div>
+<h3>HCSR04 — Ultrasonic Distance</h3>
+<p><code>HCSR04(trig_pin, echo_pin, timeout_us=30000)</code> — timeout 30ms ≈ 5.1 เมตร</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>distance_cm()</code> / <code>distance_mm()</code> / <code>distance_inch()</code></td><td>ระยะทาง หรือ <code>None</code> ถ้าเกิน range (2–400 cm)/timeout</td></tr><tr><td><code>read_median(samples=5)</code></td><td>ค่า median เป็น cm (มี delay 20ms ระหว่าง sample)</td></tr></tbody></table></div>
+<p>การต่อ: <code>VCC→5V</code>, <code>TRIG→gpio</code>, <code>ECHO→gpio</code>, <code>GND→GND</code> — <strong>ถ้าใช้ 5V ต้อง voltage divider ที่ ECHO</strong> (ไม่ทน 5V)</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">sensor = HCSR04(trig_pin=13, echo_pin=12)
+d = sensor.distance_cm()</code></pre></div>
+<hr>
+<h2>ADC แบบหลายช่อง</h2>
+<h3>ADS1115 / ADS1015 — 16-bit ADC (I2C)</h3>
+<p><code>ADS1115(sda=21, scl=22, address=0x48, freq=400000, i2c=None, gain=2048, model='ADS1115')</code></p>
+<ul><li><code>address</code>: 0x48 (GND), 0x49 (VDD), 0x4A (SDA), 0x4B (SCL)</li><li><code>gain</code> (mV เต็มสเกล): 6144 / 4096 / 2048 / 1024 / 512 / 256</li><li><code>model</code>: <code>'ADS1115'</code> (16-bit) หรือ <code>'ADS1015'</code> (12-bit)</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read_raw(channel=0)</code></td><td>ค่า raw</td><td><code>int</code> หรือ <code>None</code> (channel 0–3)</td></tr><tr><td><code>read_voltage(channel=0)</code></td><td>ค่าแรงดัน</td><td><code>float</code> V หรือ <code>None</code></td></tr><tr><td><code>read_all()</code></td><td>อ่านครบ 4 ช่อง</td><td><code>{"ch0":..,"ch1":..,"ch2":..,"ch3":..}</code> (V หรือ None)</td></tr></tbody></table></div>
+<p>ใช้เมื่อต้องการ ADC ความละเอียดสูงกว่าในตัว (12-bit) หรือต้องการอ่านหลายช่อง</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">adc = ADS1115(address=0x48)
+print(adc.read_voltage(0))</code></pre></div>
+<hr>
+<h2>คุณภาพอากาศ / ชีวภาพ</h2>
+<h3>MAX30102 — Pulse Oximeter (I2C)</h3>
+<p><code>MAX30102(sda=21, scl=22, address=0x57, freq=400000, i2c=None, mode='spo2')</code></p>
+<ul><li><code>mode</code>: <code>'spo2'</code> หรือ <code>'hr'</code></li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read_fifo()</code></td><td>อ่านตัวอย่างล่าสุด</td><td><code>(red, ir)</code> raw 18-bit หรือ <code>(None, None)</code></td></tr><tr><td><code>read_samples(count=50, interval_ms=10)</code></td><td>สุ่มตัวอย่างชุด</td><td><code>list[(red, ir)]</code></td></tr><tr><td><code>finger_detected(threshold=50000)</code></td><td>เช็คว่ามีนิ้ว</td><td><code>bool</code></td></tr><tr><td><code>reset()</code> / <code>clear_fifo()</code></td><td>รีเซ็ต/ล้าง buffer</td><td>—</td></tr></tbody></table></div>
+<p>ข้อควรระวัง: คืน <strong>raw เท่านั้น</strong> — BPM/SpO2 ต้องเขียน algorithm (เช่น peak detection) เอง ยังไม่มีใน lib</p>
+<h3>LDR — เซนเซอร์แสง</h3>
+<p><code>LDR(pin, adc_atten=ATTN_11DB, r_fixed=10000.0, vcc=3.3)</code> — วงจร: <code>3.3V ── R_fixed ── ADC ── LDR ── GND</code></p>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read_raw()</code></td><td>0–4095</td></tr><tr><td><code>voltage</code></td><td>V</td></tr><tr><td><code>light_level</code></td><td>0.0–100.0 %</td></tr><tr><td><code>resistance</code></td><td>Ω ของ LDR</td></tr><tr><td><code>is_dark(threshold=30.0)</code></td><td><code>bool</code> (แสง &lt; threshold)</td></tr><tr><td><code>read_average(samples=10)</code></td><td>เฉลี่ย %</td></tr></tbody></table></div>
+<h3>SoilMoisture — ความชื้นดิน</h3>
+<p><code>SoilMoisture(analog_pin, digital_pin=None, dry_value=3000, wet_value=1000, adc_atten=ATTN_11DB)</code></p>
+<ul><li><code>dry_value</code>/<code>wet_value</code>: ADC raw ต้อง calibrate ตามเซนเซอร์จริง (<strong>dry ต้องมากกว่า wet</strong>)</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read_raw()</code></td><td>0–4095</td></tr><tr><td><code>moisture_percent</code></td><td>0–100% (clamp)</td></tr><tr><td><code>is_dry(threshold=30.0)</code> / <code>is_wet(threshold=70.0)</code></td><td><code>bool</code></td></tr><tr><td><code>digital_output()</code></td><td><code>True</code>=เปียก, <code>False</code>=แห้ง, <code>None</code>=ไม่ได้ต่อ DOUT</td></tr><tr><td><code>calibrate(dry_raw=None, wet_raw=None)</code></td><td>อัปเดตค่า calibrate</td></tr><tr><td><code>read_average(samples=10)</code></td><td>เฉลี่ย %</td></tr></tbody></table></div>
+<h3>MQGas — MQ-2 / MQ-7 / MQ-135</h3>
+<p><code>MQGas(analog_pin, digital_pin=None, model='MQ2', rl=10000.0, r0=None, adc_atten=ATTN_11DB)</code></p>
+<ul><li><code>model</code>: <code>'MQ2'</code> (LPG/CO/Smoke), <code>'MQ7'</code> (CO), <code>'MQ135'</code> (NH3/CO2/Benzene)</li><li><code>r0=None</code> → ใช้ค่า default ตามรุ่น</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>read_ppm(gas=None)</code></td><td>อ่านความเข้มข้น</td><td>ppm หรือ <code>None</code> (ไม่ระบุ gas ใช้ตัวแรก)</td></tr><tr><td><code>calibrate(samples=50, interval_ms=50)</code></td><td>calibrate R0 ในอากาศสะอาด</td><td>คืน R0 ใหม่</td></tr><tr><td><code>ratio</code> / <code>rs</code> / <code>voltage</code> (property)</td><td>ค่ากลาง</td><td>float</td></tr><tr><td><code>digital_alarm()</code></td><td>เกิน threshold</td><td><code>True</code>=เกิน (active LOW), <code>None</code>=ไม่มี DOUT</td></tr></tbody></table></div>
+<p>ข้อควรระวัง: <strong>ต้อง preheat 20–48 ชม. ก่อนใช้ครั้งแรก</strong> และ VCC→5V</p>
+<hr>
+<h2>พลังงาน / แม่เหล็ก</h2>
+<h3>INA219 — Power Monitor (I2C)</h3>
+<p><code>INA219(sda=21, scl=22, address=0x40, freq=400000, i2c=None, shunt_ohms=0.1, max_current_a=3.2)</code></p>
+<ul><li><code>address</code>: 0x40, 0x41, 0x44, 0x45</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>shunt_voltage_mv</code></td><td>mV</td></tr><tr><td><code>bus_voltage</code></td><td>V</td></tr><tr><td><code>current_ma</code></td><td>mA</td></tr><tr><td><code>power_mw</code></td><td>mW</td></tr><tr><td><code>read_all()</code></td><td><code>{"bus_voltage", "shunt_voltage_mv", "current_ma", "power_mw"}</code></td></tr><tr><td><code>overflow()</code></td><td><code>bool</code> (ล้นเกินสเกล)</td></tr></tbody></table></div>
+<p>การต่อ: วาง shunt (0.1Ω) แบบ series กับโหลด, <code>VIN+</code>/<code>VIN-</code> ข้าม shunt — ต่อ I2C ไป ESP32</p>
+<h3>OH49E — Linear Hall Effect</h3>
+<p><code>OH49E(pin, adc_atten=ATTN_11DB, vcc=3.3, null_zone_mv=50.0)</code> — ไม่มีแม่เหล็ก → output ≈ VCC/2</p>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>voltage</code> / <code>deviation_mv</code></td><td>V / mV ต่างจากกลาง (บวก=North ลบ=South)</td></tr><tr><td><code>polarity</code></td><td><code>'north'</code> / <code>'south'</code> / <code>'none'</code></td></tr><tr><td><code>field_strength</code></td><td>mT โดยประมาณ (ค่าสัมพัทธ์)</td></tr><tr><td><code>is_magnet_near(threshold_mv=None)</code></td><td><code>bool</code></td></tr><tr><td><code>calibrate_midpoint(samples=50)</code></td><td>วัด midpoint จริง (ทำตอนไม่มีแม่เหล็ก)</td></tr><tr><td><code>measure_rpm(magnets=1, window_ms=1000, threshold_mv=None)</code></td><td>RPM</td></tr><tr><td><code>watch(callback, poll_ms=20, threshold_mv=None)</code></td><td>async, เรียก callback(polarity) เมื่อเปลี่ยน</td></tr></tbody></table></div>
+<h3>BatteryMonitor — แบตเตอรี่ LiPo</h3>
+<p><code>BatteryMonitor(adc_pin=None, r1=100000, r2=100000, vref=3.3, adc_atten=3, min_v=3.0, max_v=4.2, samples=10, charge_pin=None, charge_active_low=True)</code></p>
+<ul><li>โหมด ADC: ใช้ voltage divider <code>R1</code> จาก Vbat→pin, <code>R2</code> จาก pin→GND (ค่า default 100k/100k → อ่านได้ ~ครึ่งแรงดันจริง)</li><li>หรือโหมด MAX17048: <code>BatteryMonitor.from_max17048(i2c, addr=0x36, charge_pin=None)</code></li><li><code>adc_atten</code>: 0=1.1V, 1=1.5V, 2=2.2V, 3=3.3V</li></ul>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>voltage</code></td><td>V (ผ่าน voltage divider)</td></tr><tr><td><code>percentage</code></td><td>0–100%</td></tr><tr><td><code>is_charging</code> / <code>is_low(threshold_pct=20)</code> / <code>is_full(threshold_pct=95)</code></td><td><code>bool</code></td></tr><tr><td><code>status</code></td><td>สรุปเป็นข้อความ</td></tr><tr><td><code>read_all()</code></td><td><code>{"voltage","percentage","charging","low","full","mode"}</code></td></tr><tr><td><code>start_monitoring(interval_ms=5000, callback=None, low_callback=None, low_threshold=20)</code></td><td>async monitor</td></tr><tr><td><code>stop_monitoring()</code> / <code>deinit()</code></td><td>หยุด</td></tr></tbody></table></div>
+<p>ข้อควรระวัง: <code>charge_pin</code> ใช้ <code>Pin.PULL_UP</code> ภายใน — เช็ค logic ตาม <code>charge_active_low</code></p>
+<hr>
+<h2>พลังงานไฟฟ้า (AC)</h2>
+<h3>PZEM004T — v1/v2 (custom protocol)</h3>
+<p><code>PZEM004T(tx=21, rx=20, uart_id=1, timeout_ms=1000)</code> — UART 9600, <strong>protocol เฉพาะตัว ไม่ใช่ Modbus</strong></p>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>voltage</code> / <code>current</code> / <code>power</code></td><td>V (0–300) / A (0–100) / W (0–30kW) หรือ <code>None</code></td></tr><tr><td><code>energy</code></td><td>Wh</td></tr><tr><td><code>power_factor</code></td><td>ประมาณ PF (v1/v2 วัดตรงไม่ได้)</td></tr><tr><td><code>read_all()</code></td><td><code>{"voltage","current","power","energy"}</code></td></tr><tr><td><code>reset_energy()</code></td><td><code>True</code> เสมอ (ไม่ verify response)</td></tr><tr><td><code>monitor(callback, interval_s=1.0)</code></td><td>async infinite loop เรียก callback(dict)</td></tr></tbody></table></div>
+<h3>PZEM004Tv3 — v3 (Modbus RTU)</h3>
+<p><code>PZEM004Tv3(tx=21, rx=20, uart_id=1, slave_addr=0x01, timeout_ms=1000)</code> — ต้องใช้ไฟล์นี้กับ v3</p>
+<div class="table-wrap"><table><thead><tr><th>method / property</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>voltage</code> / <code>current</code> / <code>power</code> / <code>energy</code></td><td>V (80–260) / A / W (0–23kW) / Wh</td></tr><tr><td><code>frequency</code> / <code>power_factor</code></td><td>Hz / 0.00–1.00</td></tr><tr><td><code>alarm_status</code></td><td><code>bool</code> (0xFFFF = alarm)</td></tr><tr><td><code>read_all()</code></td><td><code>{"voltage","current","power","energy","frequency","power_factor","alarm"}</code></td></tr><tr><td><code>set_alarm_threshold(watts)</code> / <code>get_alarm_threshold()</code></td><td>ตั้ง/อ่าน alarm (0–23000 W)</td></tr><tr><td><code>set_slave_address(new_addr)</code></td><td>บันทึก address ลง flash ของโมดูล</td></tr><tr><td><code>reset_energy()</code></td><td>รีเซ็ตพลังงาน (ตรวจ CRC)</td></tr><tr><td><code>monitor(callback, interval_s=1.0)</code></td><td>async infinite loop</td></tr></tbody></table></div>
+<p>การต่อ (ทั้ง v1/v2/v3): <code>PZEM TX→ESP32 RX</code>, <code>PZEM RX→ESP32 TX</code> (สลับขา), VCC→5V</p>
+<hr>
+<h2>คุณภาพอากาศ (ฝุ่น PM)</h2>
+<h3>PMS7003 / PMS5003 — Laser Particle Counter</h3>
+<p>ทั้งคู่: <code>PMS7003(rx=16, tx=17, uart_id=2, mode='active', timeout_ms=2000)</code> (PMS5003 signature เดียวกัน) — UART 9600, ใช้ 3.3V logic (VCC 5V มี LDO ในตัว)</p>
+<blockquote>⚠️ บน ESP32-C3 มี UART แค่ UART0/UART1 — ค่า default <code>uart_id=2</code> ใช้ไม่ได้ ต้องส่ง <code>uart_id=1</code> (กับ pin TX/RX ที่ว่าง เช่น GPIO20/21)</blockquote>
+<p><strong>PMS7003</strong>: <code>read()</code> → <code>PMSParseResult</code> หรือ <code>None</code>; <code>sleep()</code> / <code>wake()</code> / <code>set_mode('active'|'passive')</code> / <code>deinit()</code> <strong>PMS5003</strong> เพิ่ม: <code>warmup(duration_ms=30000)</code> — <strong>ต้องเรียกก่อนอ่าน</strong>; <code>read_multiple(count=5, delay_ms=200)</code> → คืน <strong>median</strong> จาก <code>pm2_5_atm</code></p>
+<p><strong>PMSParseResult</strong> (จาก <code>sensors._pms_base</code>) fields:</p>
+<ul><li><code>pm1_0_cf1</code>, <code>pm2_5_cf1</code>, <code>pm10_cf1</code> — µg/m³ (CF=1)</li><li><code>pm1_0_atm</code>, <code>pm2_5_atm</code>, <code>pm10_atm</code> — µg/m³ (บรรยากาศ)</li><li><code>particles_03um</code> … <code>particles_100um</code> — จำนวนอนุภาค &gt;x µm / 0.1L</li></ul>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">pms = PMS5003()
+pms.warmup()
+r = pms.read()
+print(&quot;PM2.5:&quot;, r.pm2_5_atm)</code></pre></div>
+<hr>
+<h2>GPS</h2>
+<h3>GPSNMEA — NMEA Parser</h3>
+<p><code>GPSNMEA(uart_id=1, baudrate=9600, rx_pin=None, tx_pin=None, rx_buf=256)</code> — ต่อ TX ของ GPS → RX ของ ESP32</p>
+<p><strong>NMEA ที่รองรับ:</strong> <code>$GPGGA</code>, <code>$GPRMC</code>, <code>$GPVTG</code>, <code>$GPGSA</code> (ไม่มี parser $GPGSV)</p>
+<div class="table-wrap"><table><thead><tr><th>property</th><th>คืนค่าอะไร</th></tr></thead><tbody><tr><td><code>position</code></td><td><code>(lat, lon)</code> ทศนิยม</td></tr><tr><td><code>latitude</code> / <code>longitude</code> / <code>altitude</code></td><td>float หรือ <code>None</code></td></tr><tr><td><code>speed_knots</code> / <code>speed_kmh</code> / <code>track_degrees</code></td><td>float หรือ <code>None</code></td></tr><tr><td><code>fix_quality</code> (0–5) / <code>fix_name</code> / <code>has_fix</code></td><td>สถานะสัญญาณ</td></tr><tr><td><code>satellites</code> / <code>utc_time</code> / <code>date</code> / <code>hdop</code>/<code>pdop</code>/<code>vdop</code></td><td>ข้อมูล raw</td></tr><tr><td><code>get_datetime_tuple()</code></td><td><code>(y,m,d,h,min,s)</code> หรือ <code>None</code></td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>update()</code></td><td>parse สูงสุด 10 sentences ต่อครั้ง → เรียกในลูปบ่อยๆ (non-blocking)</td></tr><tr><td><code>read_sentence(timeout_ms=1000)</code></td><td>blocking อ่าน 1 ประโยค</td></tr><tr><td><code>on_sentence(callback)</code></td><td>เรียก callback(sentence, gps)</td></tr><tr><td><code>start_monitoring(interval_ms=100, callback=None)</code></td><td>async task อ่านตลอด</td></tr><tr><td><code>stop_monitoring()</code> / <code>deinit()</code></td><td>หยุด</td></tr><tr><td><code>set_baudrate(b)</code> / <code>send_command(cmd)</code></td><td>ปรับ baud/ส่งคำสั่ง</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">gps = GPSNMEA(uart_id=1, rx_pin=20, tx_pin=21)
+while True:
+    gps.update()
+    if gps.has_fix:
+        print(gps.position)
+    time.sleep_ms(500)</code></pre></div>
+<hr>
+<h2>การตรวจจับการเคลื่อนไหว</h2>
+<h3>PIR — HC-SR501</h3>
+<p><code>PIR(pin, warmup_ms=2000)</code> — constructor <strong>บล็อก</strong> เป็นเวลา warmup (ค่าจริงควร 30–60 วิ)</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>motion_detected</code> (property)</td><td>อ่านทันที (<code>True</code> = มี motion)</td></tr><tr><td><code>on_motion(callback)</code></td><td>ตั้ง IRQ <code>IRQ_RISING</code> (debounce 500ms)</td></tr><tr><td><code>disable_irq()</code></td><td>ปิด IRQ</td></tr><tr><td><code>watch(interval_ms=100, on_motion=None, on_clear=None)</code></td><td>async infinite loop polling</td></tr></tbody></table></div>
+<h3>RCWL0516 — Microwave Radar</h3>
+<p><code>RCWL0516(pin, hold_time_ms=2000, cds_pin=None)</code> — ตรวจจับผ่านผนังไม้/พลาสติก/กระจก (ไม่ใช่โลหะ), ระยะ 4–7m, มุม ~360°, ไม่ต้อง warmup</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>คืนค่าอะไร / ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>motion_detected</code> (property)</td><td><code>bool</code></td></tr><tr><td><code>last_motion_time</code> (property)</td><td>ms นับจาก motion ล่าสุด</td></tr><tr><td><code>on_motion(callback)</code> / <code>disable_irq()</code></td><td>IRQ / ปิด</td></tr><tr><td><code>wait_for_motion(timeout_ms=10000)</code></td><td>blocking รอ motion → <code>bool</code></td></tr><tr><td><code>async_wait_for_motion(...)</code> / <code>count_pulses(duration_ms=10000)</code></td><td>async version / นับ RISING</td></tr><tr><td><code>watch(interval_ms=100, on_motion=None, on_clear=None)</code></td><td>async infinite loop</td></tr><tr><td><code>enable()</code> / <code>disable()</code> / <code>deinit()</code></td><td>ควบคุม CDS/ปิด</td></tr></tbody></table></div>
+<hr>
+<h2>ข้อควรระวังข้ามหมวด</h2>
+<ul><li><strong>ADC pin</strong> เท่านั้นที่ใช้ <code>LDR</code>/<code>SoilMoisture</code>/<code>MQGas</code>/<code>OH49E</code>/<code>BatteryMonitor</code> (โหมด ADC) — บน ESP32-C3 มี ADC1 (GPIO0–4)</li><li><strong>I2C sensor</strong> ทั้งหมดรับ <code>i2c=</code> ตัวสำเร็จรูป (ใช้บัสเดียวกับ lib หลักได้) หรือสร้างเองจาก <code>sda/scl/freq</code></li><li><strong>UART sensor</strong> ใช้ baud 9600 ทั้งหมด ระวังขา TX/RX สลับระหว่างอุปกรณ์</li><li><strong>อ่าน dict จาก <code>read_all()</code></strong> แล้วเช็ค <code>None</code> เสมอเมื่อ sensor ยังไม่พร้อม/สายหลุด</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>wifi.wifimanager</code> + <code>cloud.*</code> — อ่านค่าแล้วส่งขึ้น dashboard</li><li><code>io.abstract</code> — ถ้าอยากได้ interface กลางสำหรับ sensor</li><li><code>system.uptime</code> / <code>repl</code> — จัดการ loop อ่านข้อมูล</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

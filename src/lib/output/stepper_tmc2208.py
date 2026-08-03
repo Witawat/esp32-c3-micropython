@@ -207,10 +207,7 @@ class StepperTMC2208:
                 time.sleep_ms(2)
 
         if len(buf) >= 8:
-            # Verify sync byte and CRC
-            resp = buf[:8]
-            if resp[0] == _SYNC_BYTE or resp[4] == _SYNC_BYTE:
-                return resp
+            return buf
         return None
 
     def write_reg(self, reg: int, value: int):
@@ -234,18 +231,22 @@ class StepperTMC2208:
         if resp is None or len(resp) < 8:
             raise OSError(f"อ่าน register 0x{reg:02X} ไม่สำเร็จ")
 
-        # Response format: [SYNC, ADDR, REG, DATA[4], CRC] from master side
-        # or [SYNC, 0xFF, 0x00, 0x00, SYNC, ADDR, REG, DATA[4], CRC] from slave
-        # Find the slave sync byte
-        for i in range(len(resp) - 7):
-            if resp[i] == _SYNC_BYTE and resp[i + 1] == 0xFF and resp[i + 2] == self._addr:
-                value = (resp[i + 3] << 24 | resp[i + 4] << 16 |
-                         resp[i + 5] << 8 | resp[i + 6])
-                return value
+        # Response formats:
+        #   master: [SYNC, ADDR, REG, DATA[4], CRC]
+        #   slave : [SYNC, 0xFF, 0x00, 0x00, SYNC, ADDR, REG, DATA[4], CRC]
+        # data จะเริ่มหลัง slave sync ตัวที่ 2 (offset +7)
+        for i in range(len(resp) - 10):
+            if (resp[i] == _SYNC_BYTE and resp[i + 1] == 0xFF
+                    and resp[i + 2] == 0x00 and resp[i + 3] == 0x00
+                    and resp[i + 4] == _SYNC_BYTE):
+                return (resp[i + 7] << 24 | resp[i + 8] << 16 |
+                        resp[i + 9] << 8 | resp[i + 10])
 
-        # Try standard position (8-byte response from slave)
-        value = (resp[3] << 24 | resp[4] << 16 | resp[5] << 8 | resp[6])
-        return value
+        # Master format (8 bytes) — data ที่ offset 3-6
+        if resp[0] == _SYNC_BYTE:
+            return (resp[3] << 24 | resp[4] << 16 | resp[5] << 8 | resp[6])
+
+        raise OSError(f"อ่าน register 0x{reg:02X} ไม่สำเร็จ")
 
     # ── Control ──────────────────────────────────────────
     def enable(self):

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I/O Abstraction — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="ชั้น abstraction ของ GPIO พื้นฐาน — pin, pwm, adc, dac, i2c, spi, uart, timer">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link active" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🔧 I/O Abstraction</span><span>/</span><span>I/O Abstraction</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>pin</code> <code>pwm</code> <code>adc</code> <code>dac</code> <code>i2c</code> <code>spi</code> <code>uart</code> <code>timer</code> เป็น <strong>ชั้น abstraction ครอบ <code>machine</code> module</strong> เพื่อให้เขียนโค้ดสั้นลง อ่านง่ายขึ้น และไม่ต้องทำซ้ำในไดรเวอร์อื่นทุกตัว:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>คลาส</th><th>ครอบอะไร</th><th>ใช้แทน</th></tr></thead><tbody><tr><td><code>pin/digital_io.py</code></td><td><code>DigitalInput</code>, <code>DigitalOutput</code></td><td><code>machine.Pin</code></td><td>อ่านปุ่ม / เปิดปิด LED ฯลฯ</td></tr><tr><td><code>pwm/pwm_pin.py</code></td><td><code>PWMPin</code></td><td><code>machine.PWM</code></td><td>หรี่ไฟ LED / ควบคุมความเร็ว</td></tr><tr><td><code>adc/adc_channel.py</code></td><td><code>ADCChannel</code>, <code>ADCCalibrator</code></td><td><code>machine.ADC</code></td><td>อ่านแรงดัน analog (potentiometer, sensor)</td></tr><tr><td><code>dac/dac_channel.py</code></td><td><code>DACChannel</code>, <code>WaveformGenerator</code></td><td><code>machine.DAC</code></td><td>สร้างสัญญาณ analog / คลื่นเสียง (⚠️ <strong>C3 ไม่มี DAC</strong>)</td></tr><tr><td><code>i2c/i2c_driver.py</code></td><td><code>I2CDriver</code></td><td><code>machine.I2C</code></td><td>จัดการบัส I2C รวมศูนย์ (scan, register)</td></tr><tr><td><code>spi/spi_driver.py</code></td><td><code>SPIDriver</code>, <code>SPIDevice</code></td><td><code>machine.SPI</code></td><td>จัดการบัส SPI + chip select หลายตัว</td></tr><tr><td><code>uart/uart_driver.py</code></td><td><code>UARTDriver</code>, <code>FrameParser</code></td><td><code>machine.UART</code></td><td>สื่อสาร serial + parse frame</td></tr><tr><td><code>timer/timer_helper.py</code></td><td><code>TimerHelper</code>, <code>WatchTimer</code></td><td><code>machine.Timer</code></td><td>งานตามเวลา (periodic / one-shot)</td></tr></tbody></table></div>
+<p><strong>เหตุผลที่มีชั้น abstraction นี้:</strong> ไดรเวอร์ส่วนใหญ่ใน <code>src/lib</code> (เช่น <code>display</code>, <code>sensors</code>) ใช้ <code>machine</code> ตรงๆ อยู่แล้ว — abstraction เหล่านี้เหมาะกับผู้ที่อยากเขียนโค้ดแอปพลิเคชันสั้นๆ โดยไม่ต้องจำ argument ของ <code>machine.*</code> ทุกครั้ง และได้ฟีเจอร์เสริมเช่น debounce, smoothing, frame parser ฟรีๆ</p>
+<hr>
+<h2>pin — Digital Input / Output</h2>
+<h3>DigitalInput</h3>
+<p><code>DigitalInput(pin, pull='up', invert=False)</code> — อ่านสถานะลอจิกจากขา ตัวเลือก <code>pull</code> เป็น <code>'up'</code>, <code>'down'</code> หรือ <code>None</code> (no pull)</p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>value</code> (property)</td><td>อ่านค่าลอจิกปัจจุบัน (มี debounce ถ้าตั้งไว้)</td><td><code>int</code> 0/1</td></tr><tr><td><code>raw_value</code></td><td>อ่านค่าโดยไม่ผ่าน debounce</td><td><code>int</code> 0/1</td></tr><tr><td><code>debounce_ms</code> (get/set)</td><td>ตั้ง/อ่านเวลา debounce (ms, 0 = ปิด)</td><td><code>int</code></td></tr><tr><td><code>is_pressed()</code></td><td>ตรวจว่ากดอยู่ไหม (pull-up = LOW คือกด)</td><td><code>bool</code></td></tr><tr><td><code>is_released()</code> / <code>is_high()</code> / <code>is_low()</code></td><td>ตรวจสถานะ</td><td><code>bool</code></td></tr><tr><td><code>irq(handler, trigger)</code></td><td>ตั้ง interrupt เมื่อขอบเปลี่ยน</td><td>trigger: <code>IRQ_RISING</code>/<code>IRQ_FALLING</code>/<code>IRQ_BOTH</code></td></tr><tr><td><code>disable_irq()</code></td><td>ปิด interrupt</td><td>—</td></tr><tr><td><code>wait_for_edge(edge, timeout_ms=5000)</code></td><td>Blocking รอจนเกิด edge (คืน <code>False</code> ถ้า timeout)</td><td><code>bool</code></td></tr><tr><td><code>deinit()</code></td><td>คืนทรัพยากร</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from pin.digital_io import DigitalInput
+
+btn = DigitalInput(pin=9, pull=&#x27;up&#x27;)        # ปุ่มกดแบบ active LOW
+btn.debounce_ms = 50                        # กันสัญญาณสปริง
+if btn.is_pressed():
+    print(&quot;กดอยู่!&quot;)
+
+btn.irq(lambda p: print(&quot;เปลี่ยน&quot;), trigger=DigitalInput.IRQ_FALLING)</code></pre></div>
+<h3>DigitalOutput</h3>
+<p><code>DigitalOutput(pin, active_low=False, initial_state=False)</code> — <code>active_low=True</code> สำหรับรีเลย์/โมดูลบางรุ่นที่ <code>LOW = ON</code></p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>on()</code> / <code>off()</code> / <code>toggle()</code> / <code>set(state)</code></td><td>เปิด/ปิด/สลับ/ตั้งสถานะ</td><td>—</td></tr><tr><td><code>pulse(duration_ms=100)</code></td><td>ส่ง pulse ON → รอ → OFF (blocking)</td><td>—</td></tr><tr><td><code>value</code> (property)</td><td>สถานะลอจิกปัจจุบัน (นับ active_low แล้ว)</td><td><code>int</code> 0/1</td></tr><tr><td><code>is_on</code> (property)</td><td>ตรวจว่าอยู่ในสถานะ ON</td><td><code>bool</code></td></tr><tr><td><code>deinit()</code></td><td>ปิด output + คืนทรัพยากร</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from pin.digital_io import DigitalOutput
+
+led = DigitalOutput(pin=8, active_low=False)
+led.on()
+led.toggle()
+led.pulse(500)      # กระพริบ 500ms</code></pre></div>
+<hr>
+<h2>pwm — Pulse Width Modulation</h2>
+<p><code>PWMPin(pin, freq=1000, duty_u16=0, invert=False)</code> — บน ESP32-C3 ทุก GPIO ใช้ PWM ได้ผ่าน LEDC</p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>duty_percent(pct)</code></td><td>ตั้ง duty เป็น %</td><td>0.0–100.0</td></tr><tr><td><code>duty_u16(value)</code></td><td>ตั้ง duty แบบ native</td><td>0–65535 (32768 = 50%)</td></tr><tr><td><code>duty_ns(ns)</code></td><td>ตั้งเป็นความกว้าง pulse นาโนวินาที</td><td><code>int</code></td></tr><tr><td><code>freq</code> (get/set)</td><td>อ่าน/เปลี่ยนความถี่ (Hz)</td><td><code>int</code></td></tr><tr><td><code>on(pct=100)</code> / <code>off()</code></td><td>เปิดเต็ม (หรือ % ที่ระบุ) / ปิด</td><td>—</td></tr><tr><td><code>toggle()</code></td><td>สลับ 0% ↔ 100%</td><td>—</td></tr><tr><td><code>pulse(duty_pct, duration_ms)</code></td><td>ส่ง pulse (blocking)</td><td>—</td></tr><tr><td><code>deinit()</code></td><td>ปิด PWM</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from pwm.pwm_pin import PWMPin
+
+led = PWMPin(pin=8, freq=1000)
+led.duty_percent(75)        # หรี่ 75%
+led.freq = 5000             # เปลี่ยนความถี่
+led.pulse(50, 200)          # pulse 200ms ที่ 50%
+led.deinit()</code></pre></div>
+<hr>
+<h2>adc — Analog-to-Digital</h2>
+<p><code>ADCChannel(pin, atten=3, width=12, vref=3.3)</code> — <code>atten</code>: <code>0</code>=0dB (0–1.0V), <code>2</code>=6dB (0–2.0V), <code>3</code>=11dB (0–3.6V) ซึ่งเป็นค่า default</p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>read_raw()</code></td><td>อ่านค่า raw</td><td>0 ถึง <code>max_raw</code> (12-bit = 0–4095)</td></tr><tr><td><code>read_voltage()</code> / <code>read_millivolts()</code></td><td>อ่านเป็น V / mV</td><td><code>float</code> / <code>int</code></td></tr><tr><td><code>read_percent(min_v, max_v)</code></td><td>อ่านเป็น % ในช่วงที่กำหนด</td><td>0.0–100.0</td></tr><tr><td><code>read_average(samples=10, delay_ms=1)</code></td><td>ค่าเฉลี่ยหลาย sample (ลด noise)</td><td><code>float</code> (V)</td></tr><tr><td><code>read_smooth()</code></td><td>Exponential Moving Average (ค่าเริ่มต้น <code>alpha=0.7</code>)</td><td><code>float</code> (V)</td></tr><tr><td><code>read_average_raw(samples, delay_ms)</code></td><td>เฉลี่ยแบบ raw</td><td><code>int</code></td></tr><tr><td><code>is_above(v)</code> / <code>is_below(v)</code></td><td>เปรียบเทียบกับ threshold</td><td><code>bool</code></td></tr><tr><td><code>alpha</code> (get/set)</td><td>ปรับ smoothing factor (0.0–1.0)</td><td><code>float</code></td></tr><tr><td><code>max_raw</code> (property)</td><td>ค่า raw สูงสุดของ resolution นั้น</td><td><code>int</code></td></tr></tbody></table></div>
+<p><strong>ข้อควรระวัง ESP32-C3:</strong> ADC1 มี 5 ช่อง (GPIO0–4) ปลอดภัยตอนเปิด WiFi, ส่วน ADC2 มีช่องเดียวคือ GPIO5 ซึ่ง <strong>ชนกับ WiFi</strong> — ถ้าใช้ WiFi พร้อมกันให้เลือก GPIO0–4</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from adc.adc_channel import ADCChannel
+
+adc = ADCChannel(pin=2)          # ใช้ ADC1 ช่วงที่ปลอดภัย
+v = adc.read_voltage()           # แรงดันเป็น V
+pct = adc.read_percent(0.0, 3.3) # เปอร์เซ็นต์
+avg = adc.read_average(20)       # ค่าเฉลี่ย ลด noise</code></pre></div>
+<h3>ADCCalibrator</h3>
+<p>class สถิต สำหรับปรับแก้ความคลาดเคลื่อนของ ADC:</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>calibrate_vref(adc_channel)</code></td><td>ประมาณ Vref จริงจาก internal reference (~1100mV)</td></tr><tr><td><code>calibrate_endpoints(adc_channel, raw_min, raw_max, volt_min, volt_max)</code></td><td>สร้าง mapping เส้นตรงจาก 2 จุด → <code>{'slope', 'offset'}</code></td></tr><tr><td><code>read_calibrated(adc_channel, calibration)</code></td><td>อ่านแรงดันที่แก้ค่าแล้วจาก dict ที่ได้</td></tr></tbody></table></div>
+<hr>
+<h2>dac — Digital-to-Analog</h2>
+<p><code>DACChannel(pin)</code> — resolution 8-bit (0–255), output impedance ~200Ω (ต่อโหลดกระแสต่ำต้องผ่าน buffer)</p>
+<blockquote>⚠️ <strong>ESP32-C3 ไม่มี DAC</strong> (มีเฉพาะ ADC) — โมดูลนี้ใช้ได้กับบอร์ด ESP32 ที่มี DAC จริงเท่านั้น เช่น ESP32 (GPIO25=DAC1, GPIO26=DAC2) หรือ ESP32-S2 (GPIO17/18) ถ้าใช้กับ C3 จะเจอ <code>RuntimeError: machine.DAC ไม่พร้อมใช้งานบนบอร์ดนี้</code> (โค้ด <code>dac_channel.py</code> ระบุ GPIO25/26 ไว้ แต่นั่นไม่ใช่ ESP32-C3)</blockquote>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>write(value)</code></td><td>เขียนค่า 8-bit</td><td>0–255 (128 ≈ 1.65V)</td></tr><tr><td><code>write_mv(millivolts)</code></td><td>เขียนเป็น mV</td><td>0–3300</td></tr><tr><td><code>write_percent(percent)</code></td><td>เขียนเป็น %</td><td>0.0–100.0</td></tr><tr><td><code>ramp(target, duration_ms=1000, steps=50)</code></td><td>ค่อยๆ ไล่ค่าไป target (blocking)</td><td>—</td></tr><tr><td><code>value</code> (property)</td><td>ค่า 8-bit ปัจจุบัน</td><td><code>int</code></td></tr><tr><td><code>deinit()</code></td><td>เขียน 0 + คืนทรัพยากร</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from dac.dac_channel import DACChannel
+
+dac = DACChannel(pin=25)
+dac.write_mv(1000)      # 1.0V
+dac.write_percent(75)   # 75%
+dac.ramp(255, 2000)     # ไล่ขึ้นเต็มใน 2 วินาที</code></pre></div>
+<h3>WaveformGenerator</h3>
+<p><code>WaveformGenerator(dac_channel, amplitude=127, offset=128, frequency=1000, sample_rate=8000)</code> — สร้างคลื่นด้วย <code>asyncio</code> (ต้องรันใน event loop):</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>sine_wave(duration_ms, frequency=None)</code></td><td>เล่น sine wave</td></tr><tr><td><code>triangle_wave(duration_ms, frequency=None)</code></td><td>เล่น triangle wave</td></tr><tr><td><code>sawtooth_wave(duration_ms, frequency=None)</code></td><td>เล่น sawtooth wave</td></tr><tr><td><code>sweep(start_freq, end_freq, duration_ms)</code></td><td>เล่น sine ไล่ความถี่</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import asyncio
+from dac.dac_channel import DACChannel, WaveformGenerator
+
+async def main():
+    dac = DACChannel(pin=25)
+    wg = WaveformGenerator(dac, amplitude=127, offset=128)
+    await wg.sine_wave(2000, frequency=1000)   # sine 1kHz เป็นเวลา 2 วิ
+
+asyncio.run(main())</code></pre></div>
+<hr>
+<h2>i2c — Bus Manager</h2>
+<p><code>I2CDriver(sda=21, scl=22, freq=400000, bus_id=0)</code> — สร้างบัสเดียวแล้วให้หลายๆ อุปกรณ์ใช้ร่วมกัน (ประหยัด RAM, ป้องกัน bus conflict) ตัวไดรเวอร์ sensor หลายตัวรองรับรับ <code>i2c=</code> ตรงๆ</p>
+<blockquote>⚠️ <strong>Default <code>sda=21, scl=22</code> เป็นของ ESP32 classic</strong> — ESP32-C3 มี GPIO0–21 เท่านั้น (ไม่มี GPIO22) ต้องระบุ pin ของบอร์ดเอง เช่น <code>I2CDriver(sda=6, scl=7)</code> ตามบอร์ดที่ใช้</blockquote>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>scan()</code></td><td>หาอุปกรณ์ทุกตัวบนบัส (พิมพ์ชื่อถ้ารู้จัก)</td><td><code>list[int]</code></td></tr><tr><td><code>device_present(address)</code></td><td>ตรวจว่ามีอุปกรณ์ที่ address นี้</td><td><code>bool</code></td></tr><tr><td><code>read_byte(addr, reg)</code> / <code>write_byte(addr, reg, val)</code></td><td>อ่าน/เขียน 1 byte</td><td><code>int</code> / <code>bool</code></td></tr><tr><td><code>read_bytes(addr, reg, length)</code> / <code>write_bytes(addr, reg, data)</code></td><td>อ่าน/เขียนหลาย bytes</td><td><code>bytes</code> / <code>bool</code></td></tr><tr><td><code>read_16bit</code> / <code>write_16bit</code> (big_endian=True)</td><td>อ่าน/เขียน 16-bit</td><td><code>int</code> / <code>bool</code></td></tr><tr><td><code>read_signed_16bit(addr, reg)</code></td><td>อ่าน signed 16-bit (two's complement) — เหมาะกับ INA219, MPU6050</td><td><code>int</code></td></tr><tr><td><code>read_register_bits(addr, reg, mask, shift)</code></td><td>อ่านเฉพาะบาง bit</td><td><code>int</code></td></tr><tr><td><code>write_register_bits(addr, reg, value, mask, shift)</code></td><td>เขียนเฉพาะบาง bit (Read-Modify-Write)</td><td><code>bool</code></td></tr><tr><td><code>wait_for_bit(addr, reg, bit, expected=True, timeout_ms=1000)</code></td><td>รอจน bit เป็นค่าที่ต้องการ (เช่น busy flag)</td><td><code>bool</code></td></tr><tr><td><code>writeto(addr, data)</code> / <code>readfrom(addr, nbytes)</code></td><td>I/O แบบ raw ไม่มี register — สำหรับ PCF8574, LCD</td><td><code>bool</code> / <code>bytes</code></td></tr><tr><td><code>bus</code> (property)</td><td><code>machine.I2C</code> instance ดิบ (ส่งให้ sensor ที่รับ <code>i2c=</code>)</td><td>—</td></tr><tr><td><code>freq</code> (get/set)</td><td>อ่าน/เปลี่ยนความถี่บัส</td><td><code>int</code></td></tr><tr><td><code>COMMON_ADDRESSES</code></td><td>dict แปลง address → ชื่ออุปกรณ์ (0x3C=SSD1306, 0x68=MPU6050…)</td><td>—</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from i2c.i2c_driver import I2CDriver
+
+i2c = I2CDriver(sda=21, scl=22)      # default 400kHz
+found = i2c.scan()                    # ค้นหาอุปกรณ์
+who = i2c.read_byte(0x68, 0x75)       # MPU6050 WHO_AM_I</code></pre></div>
+<hr>
+<h2>spi — Bus + Chip Select</h2>
+<p><code>SPIDriver(spi_id=1, baudrate=10_000_000, sck=18, mosi=19, miso=23, polarity=0, phase=0, firstbit=SPI.MSB)</code> — ESP32-C3 มี SPI1/SPI2 (SPI0 ใช้โดย flash)</p>
+<blockquote>⚠️ <strong>Default pins (18/19/23) เป็นของ ESP32 classic</strong> — ESP32-C3 มี GPIO0–21 เท่านั้น (ไม่มี GPIO22/23) ต้องระบุ pin ของบอร์ดเอง เช่น <code>SPIDriver(sck=6, mosi=7, miso=2, cs=10)</code> ตามบอร์ดที่ใช้</blockquote>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>write(data)</code></td><td>ส่งข้อมูลอย่างเดียว</td><td>—</td></tr><tr><td><code>read(num_bytes, write_value=0xFF)</code></td><td>อ่าน (ส่ง 0xFF สร้าง clock)</td><td><code>bytes</code></td></tr><tr><td><code>write_readinto(write_buf, read_buf)</code></td><td>Full duplex</td><td>—</td></tr><tr><td><code>transfer(data)</code></td><td>ส่ง+รับพร้อมกัน (register read)</td><td><code>bytes</code></td></tr><tr><td><code>baudrate</code> (get/set)</td><td>อ่าน/เปลี่ยนความเร็ว</td><td><code>int</code></td></tr><tr><td><code>spi</code> (property)</td><td><code>machine.SPI</code> instance ดิบ</td><td>—</td></tr></tbody></table></div>
+<h3>SPIDevice</h3>
+<p><code>SPIDevice(spi_driver, cs, freq=None, cs_active_low=True)</code> — จัดการ CS ให้อัตโนมัติทุก transaction ใช้หลายตัวบนบัสเดียว โดยแต่ละตัวมี CS pin แยก:</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from spi.spi_driver import SPIDriver, SPIDevice
+
+spi = SPIDriver(sck=18, mosi=19, miso=23)
+lcd = SPIDevice(spi, cs=5)
+sensor = SPIDevice(spi, cs=16)
+
+lcd.write(b&#x27;Hello&#x27;)                  # CS จัดการให้อัตโนมัติ
+val = sensor.read_register(0x00)     # อ่าน register (ส่ง reg|0x80)
+
+# หรือใช้ context manager
+with SPIDevice(spi, cs=5) as dev:
+    dev.write(b&#x27;\x01\x02&#x27;)</code></pre></div>
+<p><code>SPIDevice</code> มี <code>write</code>/<code>read</code>/<code>transfer</code>/<code>write_readinto</code>/<code>write_register(reg, value)</code>/<code>read_register(reg)</code> — ทุกตัวจัดการ CS ครอบให้ครบ</p>
+<hr>
+<h2>uart — Serial Communication</h2>
+<p><code>UARTDriver(uart_id=1, tx=21, rx=20, baudrate=115200, bits=8, parity=None, stop=1, timeout_ms=1000, flow=0)</code> — <strong>UART0 ถูก REPL ใช้อยู่ → ใช้ UART1</strong> (ESP32-C3 มี 2 UART เท่านั้น: UART0/UART1), <code>parity</code>: <code>None</code>/<code>0</code>=even/<code>1</code>=odd, <code>flow</code>: <code>0</code>=none/<code>1</code>=RTS/<code>2</code>=CTS/<code>3</code>=ทั้งคู่</p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>write(data)</code></td><td>ส่ง (รับ <code>str</code> ด้วย, encode utf-8)</td><td><code>int</code> bytes</td></tr><tr><td><code>read(num_bytes=None)</code></td><td>อ่าน blocking (None = ทั้งหมดที่มี)</td><td><code>bytes</code></td></tr><tr><td><code>readline()</code></td><td>อ่านจนเจอ <code>\n</code></td><td><code>bytes</code></td></tr><tr><td><code>read_until(delimiter, timeout_ms)</code></td><td>อ่านจนเจอ delimiter</td><td><code>bytes</code></td></tr><tr><td><code>any()</code> / <code>in_waiting</code></td><td>จำนวน bytes ที่รออ่าน (non-blocking)</td><td><code>int</code></td></tr><tr><td><code>async_read(num_bytes, timeout_ms)</code></td><td>อ่านแบบ async (ไม่บล็อก event loop)</td><td><code>bytes</code></td></tr><tr><td><code>async_readline(timeout_ms)</code></td><td>อ่านบรรทัดแบบ async</td><td><code>bytes</code></td></tr><tr><td><code>async_write(data, delay_ms=0)</code></td><td>ส่งแบบ async</td><td><code>int</code></td></tr><tr><td><code>flush()</code> / <code>reset_buffer()</code></td><td>ล้าง buffer ส่ง/รับ</td><td>—</td></tr><tr><td><code>baudrate</code> (get/set)</td><td>อ่าน/เปลี่ยน baud</td><td><code>int</code></td></tr><tr><td><code>is_connected</code></td><td>ตรวจว่า initialized แล้ว</td><td><code>bool</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from uart.uart_driver import UARTDriver
+
+uart = UARTDriver(uart_id=1, tx=21, rx=20, baudrate=115200)
+uart.write(b&#x27;AT\r\n&#x27;)
+resp = uart.readline()</code></pre></div>
+<h3>FrameParser</h3>
+<p>ช่วยตัด frame ออกจาก stream ที่รับมา:</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>extract_length_prefixed(buffer, len_offset=0, len_size=1)</code></td><td>แบบมี byte บอกความยาว → <code>(frames, remaining)</code></td></tr><tr><td><code>extract_delimiter(buffer, delimiter=b'\r\n')</code></td><td>แบบคั่นด้วย delimiter → <code>(frames, remaining)</code></td></tr><tr><td><code>crc8(data, poly=0x07)</code></td><td>คำนวณ CRC-8</td></tr><tr><td><code>crc16(data, poly=0xA001)</code></td><td>คำนวณ CRC-16 (Modbus style)</td></tr><tr><td><code>verify_crc(data, crc_bytes, poly=None)</code></td><td>ตรวจ CRC (1 หรือ 2 byte)</td></tr></tbody></table></div>
+<hr>
+<h2>timer — Scheduling &amp; Timing</h2>
+<h3>TimerHelper</h3>
+<p><code>TimerHelper(timer_id=None)</code> — <code>None</code> = auto-allocate จาก 4 HW timer (ESP32-C3 มี 4 ตัว), <code>-1</code> = ใช้ software (asyncio) อย่างเดียว. Software timer ต้องมี event loop รันอยู่</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>set_interval(callback, period_ms)</code></td><td>เรียก callback ซ้ำทุก period → คืน <code>callback_id</code></td></tr><tr><td><code>set_timeout(callback, delay_ms)</code></td><td>เรียก callback ครั้งเดียวหลัง delay → คืน <code>callback_id</code></td></tr><tr><td><code>cancel(callback_id)</code></td><td>ยกเลิกงานตาม id</td></tr><tr><td><code>stop_all()</code></td><td>หยุดทุกงาน</td></tr><tr><td><code>deinit()</code></td><td>หยุดทั้งหมด + คืน HW timer</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from timer.timer_helper import TimerHelper
+
+t = TimerHelper()
+t.set_interval(lambda: print(&quot;Tick&quot;), period_ms=1000)
+t.set_timeout(lambda: print(&quot;Boom!&quot;), delay_ms=5000)
+# ... รอ ...
+t.stop_all()</code></pre></div>
+<h3>WatchTimer</h3>
+<p>วัดเวลาที่ผ่านไปแบบ software (ใช้ <code>time.ticks_ms()</code>) — เหมาะกับ debounce, timeout, pulse timing:</p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>start()</code> / <code>stop()</code> / <code>reset()</code></td><td>เริ่ม/หยุด/เริ่มใหม่</td></tr><tr><td><code>elapsed_ms</code> / <code>elapsed_sec</code></td><td>เวลาที่ผ่านไป</td><td><code>int</code> / <code>float</code></td></tr><tr><td><code>has_elapsed(duration_ms)</code></td><td>ตรวจว่าครบเวลายัง</td><td><code>bool</code></td></tr><tr><td><code>remaining_ms(duration_ms)</code></td><td>เวลาที่เหลือ (0 = หมดเวลา)</td><td><code>int</code></td></tr></tbody></table></div>
+<hr>
+<h2>สรุปการเลือกใช้</h2>
+<ul><li><strong>อ่านขา (ปุ่ม/สวิตช์):</strong> <code>DigitalInput</code> — <strong>เปิด-ปิด (LED/รีเลย์):</strong> <code>DigitalOutput</code></li><li><strong>หรี่ไฟ / ควบคุมความเร็ว:</strong> <code>PWMPin</code></li><li><strong>อ่านแรงดัน analog:</strong> <code>ADCChannel</code> (จำไว้: ใช้ GPIO0–4 ตอนเปิด WiFi)</li><li><strong>สร้างสัญญาณ analog / คลื่น:</strong> <code>DACChannel</code> + <code>WaveformGenerator</code> — <strong>เฉพาะบอร์ดที่มี DAC (ESP32/S2) ไม่ใช่ C3</strong></li><li><strong>อุปกรณ์ I2C หลายตัว:</strong> <code>I2CDriver</code> (scan + register helper ครบ)</li><li><strong>อุปกรณ์ SPI หลายตัว:</strong> <code>SPIDriver</code> + <code>SPIDevice</code> (CS อัตโนมัติ)</li><li><strong>คุยกับอุปกรณ์ serial:</strong> <code>UARTDriver</code> + <code>FrameParser</code></li><li><strong>งานตามเวลา:</strong> <code>TimerHelper</code> (HW) หรือ <code>WatchTimer</code> (software วัด elapsed)</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>display</code> / <code>sensors</code> / <code>output</code> / <code>input</code> — ไดรเวอร์เหล่านี้ส่วนใหญ่สร้าง <code>machine</code> เองตรงๆ; ถ้าเขียนแอปเอง ให้ใช้ abstraction เหล่านี้แทนเพื่อโค้ดสั้นลง</li><li><code>io_expander</code> — ขยาย GPIO ผ่าน I2C เมื่อขาไม่พอ</li><li><code>network</code> / <code>cloud</code> — เทคนิคอ่าน/เขียน เช่น <code>I2CDriver</code> ใช้กับเซนเซอร์ที่ส่งข้อมูลขึ้น cloud</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

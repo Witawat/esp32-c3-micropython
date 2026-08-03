@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REPL — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="สร้าง REPL/CLI ของตัวเอง — command dispatcher, TCP, UART, BLE, WebREPL">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link active" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>🛠️ REPL</span><span>/</span><span>REPL</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>repl</code> ช่วยสร้าง <strong>อินเทอร์เฟซสั่งงาน (command line)</strong> ให้ ESP32 ผ่านช่องทางต่างๆ ประกอบด้วย:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>คลาส</th><th>ช่องทาง</th></tr></thead><tbody><tr><td><code>command_dispatcher.py</code></td><td><code>CommandDispatcher</code></td><td>แกนกลาง — ลงทะเบียนคำสั่งและ dispatch (ไม่ขึ้นกับ transport)</td></tr><tr><td><code>tcp_repl.py</code></td><td><code>TCPRepl</code></td><td>ผ่าน TCP (WiFi) — ใช้ telnet/PuTTY/nc</td></tr><tr><td><code>uart_repl.py</code></td><td><code>UARTRepl</code></td><td>ผ่าน UART (serial) — ใช้ serial terminal</td></tr><tr><td><code>ble_repl.py</code></td><td><code>BLERepl</code></td><td>ผ่าน BLE UART (Nordic UART Service) — ใช้ nRF Toolbox</td></tr><tr><td><code>web_repl.py</code></td><td><code>WebREPL</code></td><td>เปิด WebREPL (browser-based, full Python REPL)</td></tr></tbody></table></div>
+<p><strong>แนวคิด:</strong> สร้าง <code>CommandDispatcher</code> หนึ่งตัว (กำหนดคำสั่งแอปเราเอง เช่น <code>led on</code>, <code>temp read</code>) แล้วต่อกับ transport กี่ช่องก็ได้ — คำสั่งชุดเดียวทำงานได้ทั้ง TCP/UART/BLE</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)</code></pre></div>
+<hr>
+<h2>CommandDispatcher — แกนกลางการสั่งงาน</h2>
+<p><code>CommandDispatcher(prompt='esp32&gt; ', exec_enabled=False, welcome=None)</code></p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>register(name, handler, description='')</code></td><td>ลงทะเบียนคำสั่ง (ชื่อไม่ไวต่อตัวพิมพ์)</td><td>—</td></tr><tr><td><code>unregister(name)</code></td><td>ลบคำสั่ง</td><td><code>bool</code></td></tr><tr><td><code>@dispatcher.command(name, description='')</code></td><td><strong>decorator</strong> ลงทะเบียน (สั้นที่สุด)</td><td>—</td></tr><tr><td><code>list_commands()</code></td><td>dict <code>{name: description}</code></td><td><code>dict</code></td></tr><tr><td><code>dispatch(line)</code></td><td>แยกคำสั่ง+args แล้วเรียก handler → response (มี prompt ต่อท้าย)</td><td><code>str</code></td></tr><tr><td><code>prompt</code> (attribute)</td><td>ใช้ใน transport + <code>secure_dispatch()</code> ของ security</td><td><code>str</code></td></tr></tbody></table></div>
+<p>Built-in คำสั่ง: <code>help</code> (รายการคำสั่ง), <code>mem</code> (RAM), <code>gc</code> (เก็บขยะ), <code>echo</code>, และ <code>exec &lt;code&gt;</code> (เฉพาะเมื่อ <code>exec_enabled=True</code> — อันตราย ควรปิดใน production)</p>
+<p>Handler มี signature <code>handler(*args) -&gt; str</code> — args มาจากคำที่เว้นวรรคถัดจากชื่อคำสั่ง</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from repl.command_dispatcher import CommandDispatcher
+
+dispatcher = CommandDispatcher(prompt=&#x27;esp32&gt; &#x27;)
+
+@dispatcher.command(&#x27;led&#x27;, &#x27;เปิด/ปิด LED&#x27;)
+def led_cmd(*args):
+    state = args[0] if args else &#x27;on&#x27;
+    return f&#x27;✅ LED {state.upper()}&#x27;
+
+@dispatcher.command(&#x27;temp&#x27;, &#x27;อ่านอุณหภูมิ&#x27;)
+def temp_cmd(*args):
+    return &#x27;✅ 30.5°C&#x27;
+
+print(dispatcher.dispatch(&#x27;led on&#x27;))     # ✅ LED ON\r\n esp32&gt;
+print(dispatcher.dispatch(&#x27;temp&#x27;))       # ✅ 30.5°C\r\n esp32&gt;</code></pre></div>
+<hr>
+<h2>TCPRepl — สั่งงานผ่าน WiFi TCP</h2>
+<p><code>TCPRepl(dispatcher, host='0.0.0.0', port=8266, password=None)</code> — async, รองรับ <strong>1 client พร้อมกัน</strong>, หมดเวลา idle 300 วิ</p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>await start()</code></td><td>เริ่ม server (bind port)</td></tr><tr><td><code>await stop()</code></td><td>หยุด server</td></tr><tr><td><code>is_running</code> / <code>is_busy</code> (property)</td><td>server ทำงานอยู่ / มี client เชื่อม</td></tr></tbody></table></div>
+<p>เชื่อมต่อด้วย <code>telnet &lt;ESP32-IP&gt; 8266</code> (หรือ nc/PuTTY) — ถ้าตั้ง <code>password</code> client ต้องส่ง password บรรทัดแรก</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import asyncio
+from repl.tcp_repl import TCPRepl
+from repl.command_dispatcher import CommandDispatcher
+
+dispatcher = CommandDispatcher()
+
+async def main():
+    repl = TCPRepl(dispatcher, port=8266, password=&#x27;esp32&#x27;)
+    await repl.start()
+    while True:
+        await asyncio.sleep(1)
+
+asyncio.run(main())</code></pre></div>
+<h2>UARTRepl — สั่งงานผ่าน serial</h2>
+<p><code>UARTRepl(dispatcher, uart_id=1, baudrate=115200, tx=21, rx=20, timeout_ms=10, newline=b'\r\n')</code> — async polling (ไม่บล็อก), รองรับ line editing (backspace)</p>
+<p><strong>ใช้ UART1 (GPIO21/20) เพราะ UART0 ถูก MicroPython REPL ใช้อยู่</strong></p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>await start()</code></td><td>เริ่ม UART + เริ่ม read loop (task เบื้องหลัง)</td></tr><tr><td><code>await stop()</code></td><td>หยุด + <code>deinit()</code></td></tr><tr><td><code>write(text)</code></td><td>ส่งข้อความออก UART โดยตรง (push ข้อมูล async เช่น sensor)</td></tr><tr><td><code>is_running</code></td><td>ทำงานอยู่หรือไม่</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import asyncio
+from repl.uart_repl import UARTRepl
+from repl.command_dispatcher import CommandDispatcher
+
+dispatcher = CommandDispatcher()
+
+async def main():
+    repl = UARTRepl(dispatcher, uart_id=1, tx=21, rx=20)
+    await repl.start()
+    while True:
+        await asyncio.sleep(1)
+
+asyncio.run(main())</code></pre></div>
+<h2>BLERepl — สั่งงานผ่าน Bluetooth</h2>
+<p><code>BLERepl(dispatcher, name='ESP32-REPL', ble_uart=None)</code> — ต่อยอดจาก <code>BLEUART</code> ใน <code>ble.blemanager</code> (Nordic UART Service), <strong>MTU 20 bytes → response ยาวถูกแบ่ง chunk อัตโนมัติ</strong></p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>await start()</code></td><td>ตั้ง callback + เริ่ม advertising (ชื่อตาม <code>name</code>)</td></tr><tr><td><code>await stop()</code></td><td>ล้าง callback (BLEUART ไม่มี stop)</td></tr><tr><td><code>send(text)</code></td><td>push ข้อความไป client โดยตรง (แบ่ง chunk ให้)</td></tr><tr><td><code>is_connected</code> / <code>is_running</code></td><td>มี client ต่ออยู่ / กำลังทำงาน</td></tr></tbody></table></div>
+<p>เชื่อมต่อด้วย nRF Toolbox (UART plugin), Serial Bluetooth Terminal, nRF Connect</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import asyncio
+from repl.ble_repl import BLERepl
+from repl.command_dispatcher import CommandDispatcher
+
+dispatcher = CommandDispatcher()
+
+async def main():
+    repl = BLERepl(dispatcher, name=&#x27;ESP32-REPL&#x27;)
+    await repl.start()
+    while True:
+        await asyncio.sleep(1)
+
+asyncio.run(main())</code></pre></div>
+<h2>WebREPL — เปิด MicroPython WebREPL</h2>
+<p><code>WebREPL(password='micropython')</code> — ใช้ <strong>WebREPL ในตัวของ MicroPython</strong> (WebSocket port 8266) — ให้ <strong>full Python interactive shell</strong> ผ่าน browser (ต่างจาก <code>CommandDispatcher</code> ที่เป็น structured commands) <strong>ต้องมี firmware ที่รองรับ WebREPL</strong></p>
+<div class="table-wrap"><table><thead><tr><th>method/property</th><th>ใช้ตอนไหน</th><th>รับ/คืนค่า</th></tr></thead><tbody><tr><td><code>enable()</code></td><td>เขียน <code>webrepl_cfg.py</code> + <code>webrepl.start()</code></td><td><code>bool</code></td></tr><tr><td><code>disable()</code></td><td><code>webrepl.stop()</code></td><td><code>bool</code></td></tr><tr><td><code>set_password(new)</code></td><td>เปลี่ยน password (4–9 ตัวอักษร) + restart</td><td><code>bool</code></td></tr><tr><td><code>get_url()</code></td><td>URL ใช้เชื่อมต่อ เช่น <code>ws://192.168.1.100:8266</code></td><td><code>str</code></td></tr><tr><td><code>is_configured()</code> / <code>is_enabled</code></td><td>มี config / กำลังทำงาน</td><td><code>bool</code> / <code>bool</code></td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">from repl.web_repl import WebREPL
+
+webrepl = WebREPL(password=&#x27;mypass&#x27;)
+webrepl.enable()
+print(webrepl.get_url())   # ws://192.168.1.100:8266</code></pre></div>
+<p><strong>คำเตือน:</strong> WebREPL ให้สิทธิ์เต็ม (อ่าน/เขียนไฟล์ได้) — อย่าเปิดทิ้งใน production; ใช้ร่วมกับ <code>security.repl_lock.disable_webrepl()</code></p>
+<hr>
+<h2>สรุปการเลือกใช้</h2>
+<ul><li><strong>คำสั่งแอปของเราเอง (หลายช่องทาง):</strong> <code>CommandDispatcher</code> + <code>TCPRepl</code>/<code>UARTRepl</code>/<code>BLERepl</code></li><li><strong>ต้องการ Python shell เต็ม:</strong> <code>WebREPL</code> (browser)</li><li><strong>production ต้องปลอดภัย:</strong> wrap <code>dispatch()</code> ด้วย <code>security.secure_dispatch()</code> และล็อก REPL ด้วย <code>security</code> หลัง deploy</li></ul>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>security</code> — <code>SecurityManager.secure_dispatch()</code> ครอบ <code>CommandDispatcher</code> ก่อนส่งเข้า transport + <code>REPLLock</code> ปิดช่องหลัง production</li><li><code>ble</code> — <code>BLERepl</code> ใช้ <code>BLEUART</code> จาก <code>ble.blemanager</code></li><li><code>network</code> — ต้องต่อ WiFi ก่อน <code>TCPRepl</code>/<code>WebREPL</code></li><li><code>uart</code> — ใช้ <code>UARTRepl</code> กับไดรเวอร์ UART แบบอื่นได้ (ใช้ pin ไม่ชนกัน)</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

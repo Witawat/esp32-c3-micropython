@@ -4,7 +4,7 @@ Interface: UART (default 115200bps)
 รองรับ: ESP32 ทุกรุ่น
 
 Full T1 series command set per http://wiki2.tjc1688.com/
-Inspired by CH32V003 TJC C library (c:\Users\XSoFTz\mounriver-studio-projects\CH32V003\User\Lib\TJC\)
+Inspired by CH32V003 TJC C library (c:/Users/XSoFTz/mounriver-studio-projects/CH32V003/User/Lib/TJC/)
 
 Features:
 - All T1 series commands: page, click, vis, tsw, get, dim, baud, sleep, beep, play, etc.

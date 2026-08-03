@@ -267,7 +267,7 @@ class FrameParser:
 
         while idx + len_size <= len(remaining):
             data_len = int.from_bytes(remaining[idx + len_offset:idx + len_offset + len_size], 'big')
-            frame_end = idx + len_size + data_len
+            frame_end = idx + len_offset + len_size + data_len
             if frame_end > len(remaining):
                 break
             frames.append(bytes(remaining[idx:frame_end]))
@@ -315,12 +315,12 @@ class FrameParser:
         return crc
 
     @staticmethod
-    def crc16(data: bytes, poly: int = 0x8005) -> int:
+    def crc16(data: bytes, poly: int = 0xA001) -> int:
         """
         คำนวณ CRC-16 (Modbus style)
 
         :param data: input bytes
-        :param poly: CRC polynomial (default 0x8005)
+        :param poly: CRC polynomial (default 0xA001 = reflected 0x8005, Modbus)
         :return: 16-bit CRC
         """
         crc = 0xFFFF
@@ -334,20 +334,20 @@ class FrameParser:
         return crc & 0xFFFF
 
     @staticmethod
-    def verify_crc(data: bytes, crc_bytes: int, poly: int = 0x8005) -> bool:
+    def verify_crc(data: bytes, crc_bytes: int, poly: int = None) -> bool:
         """
         ตรวจสอบ CRC
 
         :param data: input bytes (รวม CRC)
         :param crc_bytes: จำนวน CRC bytes (1 หรือ 2)
-        :param poly: CRC polynomial
+        :param poly: CRC polynomial (None = ใช้ default ตาม crc_bytes: 0x07 / 0xA001)
         :return: True ถ้า CRC ถูกต้อง
         """
         if crc_bytes == 1:
             payload = data[:-1]
             expected = data[-1]
-            return FrameParser.crc8(payload, poly) == expected
+            return FrameParser.crc8(payload, 0x07 if poly is None else poly) == expected
         else:
             payload = data[:-2]
             expected = int.from_bytes(data[-2:], 'little')
-            return FrameParser.crc16(payload, poly) == expected
+            return FrameParser.crc16(payload, 0xA001 if poly is None else poly) == expected

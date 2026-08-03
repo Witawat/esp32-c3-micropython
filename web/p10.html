@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P10 LED Display — ESP32 MicroPython Tutorial</title>
+<meta name="description" content="บอร์ดจอ LED P10 (HUB75) — ขาวดำ, สี RGB, ต่อพ่วงหลายแผง">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-text">
+        <span class="brand-title">ESP32 MicroPython Tutorial</span>
+        <span class="brand-sub">คู่มือใช้งาน lib แบบละเอียด</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <div class="search-box">
+        <input id="site-search" type="search" placeholder="ค้นหาหมวด / คลาส / API…" autocomplete="off">
+        <ul id="search-results" class="search-results" hidden></ul>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" title="สลับธีม">🌙</button>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="เมนู">☰</button>
+    </div>
+  </div>
+</header>
+<div class="layout container">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav"><p class="nav-head">🚀 เริ่มต้นใช้งาน</p>
+<a class="nav-link" href="getting-started.html">🚀 เริ่มต้นใช้งาน</a>
+<p class="nav-head">🌐 Network &amp; Communication</p>
+<a class="nav-link" href="network/wifi.html">📡 WiFi Manager &amp; Portal</a>
+<a class="nav-link" href="network/ble.html">📶 BLE Manager</a>
+<a class="nav-link" href="network/mqtt.html">📨 MQTT</a>
+<a class="nav-link" href="network/http.html">🌐 HTTP Client &amp; Server</a>
+<a class="nav-link" href="network/websocket.html">🔗 WebSocket</a>
+<a class="nav-link" href="network/telegram.html">🤖 Telegram Bot</a>
+<a class="nav-link" href="network/can.html">🚗 CAN Bus</a>
+<a class="nav-link" href="network/ethernet.html">🔌 Ethernet</a>
+<p class="nav-head">☁️ Cloud Platforms</p>
+<a class="nav-link" href="cloud.html">☁️ Cloud Platforms</a>
+<p class="nav-head">🌡️ Sensors</p>
+<a class="nav-link" href="sensors.html">📡 Sensors</a>
+<p class="nav-head">🖥️ Display</p>
+<a class="nav-link" href="display.html">🖥️ Displays</a>
+<p class="nav-head">⚙️ Output / Actuator</p>
+<a class="nav-link" href="output.html">⚙️ Outputs &amp; Actuators</a>
+<p class="nav-head">🎮 Input</p>
+<a class="nav-link" href="input.html">🎛️ Input Devices</a>
+<p class="nav-head">📺 P10 LED Panel</p>
+<a class="nav-link active" href="p10.html">🪧 P10 LED Display</a>
+<p class="nav-head">🎵 Audio</p>
+<a class="nav-link" href="audio.html">🎵 Audio (I2S)</a>
+<p class="nav-head">🔌 I/O Expander</p>
+<a class="nav-link" href="io-expander.html">🧩 I/O Expanders</a>
+<p class="nav-head">🔧 I/O Abstraction</p>
+<a class="nav-link" href="io-abstraction.html">🔧 I/O Abstraction</a>
+<p class="nav-head">💾 Storage</p>
+<a class="nav-link" href="storage.html">💾 Storage</a>
+<p class="nav-head">🔋 System Utilities</p>
+<a class="nav-link" href="system.html">🔋 System Utilities</a>
+<p class="nav-head">🔐 Security</p>
+<a class="nav-link" href="security.html">🔐 Security</a>
+<p class="nav-head">🔑 Crypto</p>
+<a class="nav-link" href="crypto.html">🔑 Crypto</a>
+<p class="nav-head">🛠️ REPL</p>
+<a class="nav-link" href="repl.html">🛠️ REPL</a></nav>
+  </aside>
+  <main class="content" id="main">
+    <nav class="breadcrumb"><a href="index.html">หน้าแรก</a><span>/</span><span>📺 P10 LED Panel</span><span>/</span><span>P10 LED Display</span></nav>
+    <article class="prose"><h2>ภาพรวมและแนวคิดการใช้งาน</h2>
+<p><code>p10</code> เป็นชุดไดรเวอร์สำหรับ <strong>P10 LED Panel</strong> (บอร์ดจอป้ายขนาดใหญ่ 32x16) ที่ใช้หัวต่อ <strong>HUB75</strong> ประกอบด้วย 3 ชั้น:</p>
+<div class="table-wrap"><table><thead><tr><th>ไฟล์</th><th>บทบาท</th></tr></thead><tbody><tr><td><code>p10_hub75.py</code></td><td><code>HUB75Engine</code> — ส่งข้อมูลไป panel ผ่าน GPIO + RMT (timing ระดับ µs)</td></tr><tr><td><code>p10_buffer.py</code></td><td><code>MonoBuffer</code> / <code>RGBBuffer</code> — frame buffer (1-bit / 24-bit) + ฟอนต์</td></tr><tr><td><code>p10_display.py</code></td><td><code>P10Mono</code> / <code>P10RGB</code> / <code>P10Chain</code> — API ระดับสูง (เหมือนไดรเวอร์ display อื่น)</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">import sys
+sys.path.append(&#x27;/lib&#x27;)
+from p10 import P10Mono, P10RGB, RED, GREEN, BLUE
+from p10.p10_hub75 import HUB75Engine
+from p10.p10_buffer import MonoBuffer, RGBBuffer</code></pre></div>
+<p><strong>Scan modes:</strong> <code>SCAN_4</code> (32×16, ขา A,B), <code>SCAN_16</code> (64×32, A,B,C,D), <code>SCAN_32</code> (64×64, A,B,C,D,E)</p>
+<p><strong>Pin map อัตโนมัติตามบอร์ด</strong> (<code>pins=None</code>): ใช้ <code>PINS_C3</code> (GPIO 0-10, 20-21) หรือ <code>PINS_S2</code> (GPIO 1-14) — ระบุเองได้ผ่าน argument <code>pins={"R1": 0, ...}</code></p>
+<hr>
+<h2>P10Mono — แผงขาวดำ</h2>
+<p><code>P10Mono(width=32, height=16, scan=None, pins=None, clk_freq=10000000, refresh_hz=120)</code></p>
+<ul><li><code>scan=None</code> → อัตโนมัติ <code>height // 2</code></li><li>สี: <code>ON=1</code>, <code>OFF=0</code></li></ul>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>ใช้ตอนไหน</th></tr></thead><tbody><tr><td><code>fill(value=1)</code> / <code>clear()</code></td><td>เติม / ล้าง</td></tr><tr><td><code>pixel(x, y, value=1)</code> / <code>get_pixel(x, y)</code></td><td>จุด</td></tr><tr><td><code>hline</code> / <code>vline</code> / <code>rect</code> / <code>fill_rect</code></td><td>เส้น/สี่เหลี่ยม</td></tr><tr><td><code>text(s, x, y, value=1)</code> / <code>center_text(s, y)</code></td><td>ข้อความ (ฟอนต์ 3x5)</td></tr><tr><td><code>scroll_text(s, delay_ms=80)</code></td><td>เลื่อนข้อความ (blocking demo)</td></tr><tr><td><code>show()</code></td><td><strong>ส่ง buffer ไปจอ</strong> (ต้องเรียก)</td></tr><tr><td><code>brightness(level)</code></td><td>ความสว่าง 0–255</td></tr><tr><td><code>on()</code> / <code>off()</code></td><td>เปิด/ปิด</td></tr><tr><td><code>start_refresh()</code> / <code>stop_refresh()</code></td><td>auto-refresh ผ่าน <code>machine.Timer</code> (ใช้กับ animation)</td></tr><tr><td><code>deinit()</code></td><td>คืนทรัพยากร</td></tr></tbody></table></div>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">panel = P10Mono(width=32, height=16)
+panel.text(&quot;Hi&quot;, 0, 2)
+panel.show()</code></pre></div>
+<h2>P10RGB — แผงสี (24-bit)</h2>
+<p><code>P10RGB(width=32, height=16, scan=None, pins=None, clk_freq=10000000, refresh_hz=60, bcm=True)</code></p>
+<ul><li><code>bcm=True</code> → Bit Correction Modulation (สีจริง 16M สี แต่ refresh ช้าลง)</li><li><code>bcm=False</code> → fast mode (8 สี, refresh เร็ว)</li><li>สี: ค่าคงที่ <code>BLACK, WHITE, RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, ORANGE</code> (tuple RGB)</li></ul>
+<p>method ชุดเดียวกับ P10Mono แต่รับ <code>color</code> tuple แทน <code>value</code> (<code>fill(color)</code>, <code>pixel(x,y,color)</code>, <code>text(s,x,y,color)</code>, <code>center_text(s,y,color)</code>)</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">panel = P10RGB(width=32, height=16)
+panel.fill(BLACK)
+panel.pixel(10, 5, RED)
+panel.fill_rect(0, 0, 8, 8, BLUE)
+panel.show()</code></pre></div>
+<p>ข้อควรระวัง: <code>P10RGB.text()</code> วาดช้าพอสมควร (สร้าง temp MonoBuffer แล้ว copy ทีละ pixel) — ไม่เหมาะข้อความที่อัปเดตถี่ๆ</p>
+<h2>P10Chain — ต่อพ่วงหลายแผง</h2>
+<p><code>P10Chain(panel_w=32, panel_h=16, scan=None, chain_h=1, chain_v=1, pins=None, clk_freq=10000000, refresh_hz=60)</code></p>
+<ul><li><code>chain_h</code>/<code>chain_v</code> = จำนวนแผงแนวนอน/แนวตั้ง (เช่น 2×1 = 64×16)</li><li>วาดลง buffer เสมือน (กว้าง <code>panel_w × chain_h</code>, สูง <code>panel_h × chain_v</code>)</li></ul>
+<p>method เหมือน P10Mono (<code>fill, clear, pixel, text, center_text, hline, vline, rect, fill_rect, show, brightness, on, off, start_refresh, stop_refresh, deinit</code>)</p>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">panel = P10Chain(panel_w=32, panel_h=16, chain_h=2, chain_v=1)
+panel.text(&quot;Hello World!&quot;, 0, 4)
+panel.show()</code></pre></div>
+<p>⚠️ <strong>ข้อจำกัดที่เห็นในโค้ด:</strong> <code>P10Chain.show()</code>/auto-refresh ยังส่ง <strong>buffer placeholder ว่าง</strong> (ไม่ได้แมปข้อมูลจริงลงแผง) — ปัจจุบันยังไม่แสดงผลจริงบนจอ ใช้ได้เฉพาะแก้ภาพอนิเมชันในสเกลเล็ก/รอปรับปรุง</p>
+<h2>Low-level: HUB75Engine</h2>
+<p><code>HUB75Engine(scan=SCAN_4, rgb=True, pins=None, clk_freq=10000000)</code> — ใช้เมื่อต้องการควบคุมเอง</p>
+<ul><li><code>init()</code> / <code>deinit()</code>, <code>brightness(0-255)</code>, <code>scan_mode</code>, <code>is_rgb</code>, <code>total_rows</code></li><li><code>show_mono(buf, width)</code> — buffer 1-bit</li><li><code>show_rgb(buf, width)</code> — BCM (RGB888), <code>show_rgb_fast(buf, width)</code> — 8 สี</li><li><code>show_rgb_chain(buf, panel_width, chain_h, chain_v)</code></li><li>ถ้า <code>machine.RMT</code> init ไม่ได้ จะ fallback เป็น GPIO bit-bang (ช้าลง)</li></ul>
+<h2>Buffer: MonoBuffer / RGBBuffer</h2>
+<p><code>MonoBuffer(width, height)</code> — 1 bit/pixel; <code>RGBBuffer(width, height)</code> — 3 bytes/pixel</p>
+<ul><li>property <code>buffer</code> → <code>bytearray</code> ส่งให้ engine</li><li>วาด: <code>fill/clear/pixel/get_pixel/hline/vline/rect/fill_rect/row/char/text/center_text/scroll_text</code></li><li>ฟอนต์ 3x5 (<code>_CHAR_W=3</code>, <code>_CHAR_H=5</code>) รองรับ A-Z, 0-9, <code>!.:-_/#*</code></li><li><code>color_rgb(r, g, b)</code> ฟังก์ชันสร้าง tuple สี; ค่าคงที่สีใน <code>p10_buffer</code> มีเพิ่ม: <code>PURPLE</code>, <code>DIM</code></li><li>⚠️ <code>RGBBuffer.text()</code> เป็น <code>pass</code> (ยังไม่ implement) — ใช้ <code>P10RGB.text()</code> แทน</li></ul>
+<hr>
+<h2>การต่อวงจร (HUB75 → ESP32)</h2>
+<div class="code-block"><div class="code-head"><span>python</span><button class="copy-btn" type="button" onclick="copyCode(this)">คัดลอก</button></div><pre><code class="lang-python">P10 Panel          ESP32-C3 (default)
+─────────          ────────────────
+R1, G1, B1      →  GPIO 0, 1, 2     (ครึ่งบน)
+R2, G2, B2      →  GPIO 3, 4, 5     (ครึ่งล่าง)
+A, B, C, D, E   →  GPIO 6, 7, 8, 9, 10
+CLK             →  GPIO 20
+LAT (STB)       →  GPIO 21
+OE              →  GPIO 10 (reuse กับ E ถ้า 1/4 scan)
+GND             →  GND</code></pre></div>
+<p>ข้อควรระวัง: แผง P10 ต้องใช้ <strong>ไฟ 5V แยก</strong> (กินกระแสสูง) — ESP32 ส่งสัญญาณ logic 3.3V ได้ (RMT/GPIO ทำงาน) แต่ควรตรวจ spec แผง; GPIO 10 ซ้ำกันระหว่าง E และ OE ตาม comment ในโค้ด</p>
+<h2>ใช้ร่วมกับ</h2>
+<ul><li><code>output</code> — ควบคุมป้ายร่วมกับมอเตอร์/relay</li><li><code>cloud</code> / <code>mqtt</code> — รับข้อความมาแสดงบนป้าย</li><li><code>system</code> — แสดงเวลา/สถานะ</li><li><code>display</code> — ไดรเวอร์อื่นใช้รูปแบบ API เดียวกัน (<code>fill/text/show</code>) ทำให้ย้ายโค้ดระหว่างจอได้</li></ul></article>
+    <footer class="page-footer">
+      <p>อัปเดตตามโค้ดจริงใน <code>src/lib</code> — หากพบข้อมูลไม่ตรง กรุณาแจ้งได้ที่ Issue</p>
+    </footer>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>ESP32 MicroPython Tutorial — สร้างจากโค้ดจริงใน <code>src/lib</code></p>
+  </div>
+</footer>
+<script>window.ROOT_PREFIX = "";</script>
+<script src="assets/js/search-index.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
