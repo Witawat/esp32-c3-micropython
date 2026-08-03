@@ -27,6 +27,8 @@ Test/
     ├── storage/                   ← Storage & config
     ├── mqtt/                      ← MQTT client
     ├── http/                      ← HTTP client/server
+    ├── websocket/                 ← WebSocket client/server
+    ├── telegram/                  ← Telegram Bot (2 ทาง: send + receive)
     ├── cloud/                     ← Cloud platform integrations
     └── system/                    ← System utilities (OTA, RTC, etc.)
 ```
@@ -249,6 +251,29 @@ Test/
 
 ---
 
+## Phase 7 — Telegram Bot (`lib/telegram/`)
+
+> Telegram Bot แบบ **โต้ตอบ 2 ทาง** (ส่ง + รับ) ผ่าน Bot API — ใช้ WiFi + HTTPS/mbedTLS
+
+| # | ไฟล์ | คลาส | Interface | สถานะ |
+|---|------|------|-----------|--------|
+| 7.1 | `telegram_bot.py` | `TelegramBot`, `MessageContext` | HTTPS (Bot API) — long/short polling | [x] |
+| 7.2 | `telegram/__init__.py` | — | export `TelegramBot`, `MessageContext` | [x] |
+
+**Tasks:**
+- [x] implement `TelegramBot` — send (ข้อความ/รูป/ไฟล์/edit/keyboard) + receive (getUpdates, commands, callback query)
+- [x] รองรับ 2 โหมด polling: `sync` (long-poll) + `async` (short-poll ไม่บล็อก loop)
+- [x] รองรับหลาย bot — หลาย instance รัน async พร้อมกัน (token/offset/handlers แยกกัน)
+- [x] Security: `allowed_chat_ids` whitelist
+- [x] Security: `verify_cert=True` + CA cert — ตรวจใบรับรอง SSL จริง (กัน MITM) ผ่าน raw socket + SSLContext CERT_REQUIRED
+- [x] จัดเตรียม `src/cert/ca.pem` (Go Daddy G2 chain ของ api.telegram.org) — ทดสอบ TLS จริงแล้ว
+- [x] Config-driven: `JsonConfigManager` + RAM management (`max_updates`, `gc.collect()`, `del`)
+- [x] สร้าง `main/examples/telegram_example.py` (ตัวอย่าง 3 ระดับ + หลาย bot)
+- [x] สร้าง `lib/telegram/README.md`
+- [x] อัปเดต docs: `KNOWLEDGE_BASE.md`, `README.md`, `lib/README.md`, `examples/README.md`
+
+---
+
 ## หมายเหตุสำคัญ
 
 | ข้อ | รายละเอียด |
@@ -274,5 +299,6 @@ Test/
 | MQTT | 1 module | ✅ เสร็จแล้ว |
 | HTTP | 2 modules | ✅ เสร็จแล้ว |
 | Cloud | 5 integrations | ✅ เสร็จแล้ว |
+| Telegram | 1 module (2 ทาง) | ✅ เสร็จแล้ว |
 | System | 5 utilities | ✅ เสร็จแล้ว |
-| **รวม** | **54 ไฟล์** | — |
+| **รวม** | **55 ไฟล์** | — |

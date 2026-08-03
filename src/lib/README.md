@@ -16,6 +16,7 @@
 | `mqtt` | MQTT manager |
 | `http` | HTTP client/server |
 | `websocket` | WebSocket client/server (RFC 6455) |
+| `telegram` | Telegram Bot — โต้ตอบ 2 ทาง (send + receive) |
 | `cloud` | ThingsBoard, Adafruit IO, Blynk, Firebase, AWS IoT |
 | `system` | OTA, RTC, deepsleep, watchdog, sysinfo |
 
@@ -37,6 +38,7 @@ from sensors.gps_nmea import GPSNMEA
 from sensors.battery_monitor import BatteryMonitor
 from mqtt.mqttmanager import MQTTManager
 from websocket import WebSocketClient, WebSocketServer
+from telegram.telegram_bot import TelegramBot
 from output.ir_remote import IRTransmitter, IRReceiver
 ```
 
@@ -61,6 +63,7 @@ from output.ir_remote import IRTransmitter, IRReceiver
 - `mqtt_example.py`
 - `http_example.py`
 - `websocket_example.py`
+- `telegram_example.py`
 - `cloud_example.py`
 - `system_example.py`
 

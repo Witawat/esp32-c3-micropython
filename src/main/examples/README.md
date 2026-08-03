@@ -35,6 +35,7 @@
 | [`ble_example.py`](#-ble_examplepy) | BLE | BLEManager — Server, UART, Sensor, iBeacon, Client |
 | [`http_example.py`](#-http_examplepy) | HTTP | HTTP Client + Server |
 | [`mqtt_example.py`](#-mqtt_examplepy) | MQTT | MQTT Client — Pub/Sub |
+| [`telegram_example.py`](#-telegram_examplepy) | Telegram | Telegram Bot — 2 ทาง, commands, inline keyboard, หลาย bot |
 | [`cloud_example.py`](#-cloud_examplepy) | Cloud | ThingsBoard, Adafruit IO, Blynk, Firebase, AWS IoT |
 | [`storage_example.py`](#-storage_examplepy) | Storage | Config Manager, Logger, SD Card |
 | [`system_example.py`](#-system_examplepy) | System | SysInfo, RTC, OTA |
@@ -304,6 +305,15 @@ await tjc_hmi_example.advanced()     # 🔴 10 ตัวอย่างขั้
 | Section | Scenario |
 |---|---|
 | `main` | Connect → Subscribe → Publish → Listen loop (HiveMQ public broker) |
+
+### 🤖 `telegram_example.py`
+**Telegram Bot — โต้ตอบ 2 ทาง**
+
+| Section | Scenario |
+|---|---|
+| `example_send_basic` | ส่งข้อความ/รูป/ไฟล์ไปยัง Telegram (get_me, send_message, send_photo) |
+| `example_commands_sync` | รับ /commands ตอบกลับ (sync long-poll + allowed_chat_ids) |
+| `example_full_async` | async short-poll + inline keyboard + callback query + 2 bot พร้อมกัน + sensor task |
 
 ### ☁️ `cloud_example.py`
 **Cloud Platform Integrations**

@@ -29,7 +29,7 @@
 
 ## 📖 ภาพรวม
 
-**ESP32 MicroPython Framework** คือชุดไลบรารี MicroPython แบบ Async-First ที่ออกแบบมาให้ทำงานบน ESP32 ทุกรุ่น (ESP32 / S2 / S3 / C3 / C6) ประกอบด้วยโมดูลสำเร็จรูปกว่า **88 โมดูล** ใน **16 หมวดหมู่** ครอบคลุมทุกฟังก์ชันที่จำเป็นสำหรับโปรเจกต์ IoT
+**ESP32 MicroPython Framework** คือชุดไลบรารี MicroPython แบบ Async-First ที่ออกแบบมาให้ทำงานบน ESP32 ทุกรุ่น (ESP32 / S2 / S3 / C3 / C6) ประกอบด้วยโมดูลสำเร็จรูปกว่า **89 โมดูล** ใน **17 หมวดหมู่** ครอบคลุมทุกฟังก์ชันที่จำเป็นสำหรับโปรเจกต์ IoT
 
 ```python
 import asyncio
@@ -54,7 +54,7 @@ asyncio.run(main())
 | คุณสมบัติ | รายละเอียด |
 |-----------|-----------|
 | ⚡ **Async-First** | ทุกโมดูลที่ทำงาน I/O ใช้ `async/await` — รันงานพร้อมกันได้หลายอย่าง |
-| 🧩 **88+ โมดูล** | ครบทุกฟังก์ชัน ตั้งแต่ Sensor, Display, Network, Cloud, Security |
+| 🧩 **89+ โมดูล** | ครบทุกฟังก์ชัน ตั้งแต่ Sensor, Display, Network, Cloud, Security |
 | ⚙️ **Config-Driven** | ทุกโมดูลรองรับ JSON Config — เปลี่ยนพฤติกรรมได้โดยไม่แก้โค้ด |
 | 🛡️ **Graceful Degradation** | พลาด dependency ไม่แครช — มี fallback เสมอ |
 | 🔌 **Lazy Initialization** | สร้าง Hardware เมื่อเรียกใช้จริง — คืนทรัพยากรด้วย `deinit()` |
@@ -65,7 +65,7 @@ asyncio.run(main())
 
 ## 🗂️ หมวดหมู่โมดูล
 
-### 🌐 Network & Communication (8 โมดูล)
+### 🌐 Network & Communication (9 โมดูล)
 
 | โมดูล | คลาสหลัก | Protocol | Async |
 |-------|-----------|----------|:-----:|
@@ -75,6 +75,7 @@ asyncio.run(main())
 | HTTP Client | `HTTPClient` | HTTP/HTTPS REST | ❌ |
 | HTTP Server | `HTTPServer` | HTTP | ❌ |
 | WebSocket | `WebSocketServer` / `WebSocketClient` | RFC 6455 | ❌ |
+| **Telegram Bot** | `TelegramBot` | HTTPS Bot API (2 ทาง) | ✅/❌ |
 | CAN Bus | `CANManager` | TWAI / CAN 2.0 | ❌ |
 | Ethernet | `EthernetManager` | RMII (LAN8720) | ✅ |
 
@@ -88,6 +89,16 @@ await wifi.connect()
 mqtt = MQTTManager(client_id="esp32", broker="broker.hivemq.com")
 mqtt.connect()
 mqtt.publish("sensor/temp", "25.5")
+```
+
+**Telegram Bot — โต้ตอบ 2 ทาง** (ส่งข้อความ + รับคำสั่งผ่าน long/short polling):
+```python
+from telegram.telegram_bot import TelegramBot
+
+bot = TelegramBot(token="123456:ABC...", allowed_chat_ids=[123456789])
+bot.on_command("/status", lambda ctx: ctx.reply("🟢 ONLINE"))
+bot.loop()                       # sync (long-poll)
+# หรือ await bot.run()           # async (short-poll, ไม่บล็อกงานอื่น)
 ```
 
 ---
@@ -370,6 +381,7 @@ ampy --port COM3 put main.py
 | 📨 MQTT Pub/Sub | `mqtt_example.py` |
 | 🌐 HTTP Client + Server | `http_example.py` |
 | 🔗 WebSocket | `websocket_example.py` |
+| 🤖 Telegram Bot (2 ทาง) | `telegram_example.py` |
 | ☁️ Cloud Platforms | `cloud_example.py` |
 | 🌡️ Sensors (DHT, BMP280, HC-SR04, ฯลฯ) | `sensors_example.py` |
 | 🖥️ Display (OLED, TFT, TJC HMI) | `display_example.py` |
@@ -434,12 +446,14 @@ except ImportError:
 │   ├── main.py                    ← Entry point หลัก
 │   ├── boot_production.py         ← Boot script สำหรับ production
 │   ├── device.cfg                 ← Device configuration
+│   ├── 📁 cert/                   ← CA certificates (ca.pem → /cert/)
 │   ├── 📁 lib/                    ← ไลบรารีทั้งหมด ( deploy ไป /lib )
 │   │   ├── 📁 wifi/               ← WiFi STA/AP + Config Portal
 │   │   ├── 📁 ble/                ← BLE GATT Server/Client
 │   │   ├── 📁 mqtt/               ← MQTT Client
 │   │   ├── 📁 http/               ← HTTP Client + Server
 │   │   ├── 📁 websocket/          ← WebSocket Client + Server
+│   │   ├── 📁 telegram/           ← Telegram Bot (2 ทาง)
 │   │   ├── 📁 cloud/              ← Cloud Platform Integrations (5)
 │   │   ├── 📁 sensors/            ← Sensor Drivers (20)
 │   │   ├── 📁 display/            ← Display Drivers (8)
@@ -488,8 +502,9 @@ except ImportError:
 
 | หมวดหมู่ | จำนวน | ประเภท |
 |----------|:-----:|--------|
-| Network & Communication | 8 | Software + Hardware |
+| Network & Communication | 9 | Software + Hardware |
 | Cloud Platforms | 5 | Software |
+| Telegram Bot | 1 | Software |
 | Sensors | 20 | Hardware |
 | Display | 8 | Hardware |
 | Output / Actuator | 13 | Hardware |
@@ -502,7 +517,7 @@ except ImportError:
 | I/O Interface Abstraction | 9 | Software |
 | Crypto | 1 | Software |
 | Audio | 1 | Hardware |
-| **รวม** | **~88** | |
+| **รวม** | **~89** | |
 
 ---
 

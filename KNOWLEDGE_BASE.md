@@ -28,8 +28,10 @@ Test/                              ← Root project (deploy ไป ESP32)
 │       ├── mqtt_example.py
 │       ├── http_example.py
 │       ├── websocket_example.py
+│       ├── telegram_example.py
 │       ├── cloud_example.py
 │       └── system_example.py
+├── cert/                          ← CA certificates (ca.pem → /cert/)
 └── lib/
     ├── README.md                  ← ภาพรวม lib/ ทั้งหมด
     ├── wifi/                      ← WiFi STA/AP + Config Portal
@@ -37,6 +39,7 @@ Test/                              ← Root project (deploy ไป ESP32)
     ├── mqtt/                      ← MQTT Client (umqtt)
     ├── http/                      ← HTTP Client + Server
     ├── websocket/                 ← WebSocket Client + Server
+    ├── telegram/                  ← Telegram Bot (โต้ตอบ 2 ทาง)
     ├── cloud/                     ← Cloud Platform Integrations (5 platforms)
     ├── sensors/                   ← Sensor Drivers (20 ตัว)
     ├── display/                   ← Display Drivers (7 ตัว + TJC HMI)
@@ -162,6 +165,7 @@ from input.keypad import MatrixKeypad
 | HTTP Client | `http.httpclient` | `HTTPClient` | HTTP/HTTPS | ❌ |
 | HTTP Server | `http.httpserver` | `HTTPServer` | HTTP | ❌ |
 | WebSocket | `websocket.websocket_server` | `WebSocketServer`, `WebSocketClient` | RFC 6455 | ❌ |
+| Telegram Bot | `telegram.telegram_bot` | `TelegramBot` | HTTPS (Bot API) | ✅/❌ |
 | CAN | `can.can_manager` | `CANManager` | TWAI/CAN 2.0 | ❌ |
 | Ethernet | `ethernet.ethernet_manager` | `EthernetManager` | RMII | ✅ |
 
@@ -226,6 +230,38 @@ from cloud.firebase import FirebaseRTDB
 fb = FirebaseRTDB(database_url="https://xxx.firebaseio.com", auth_token="SECRET")
 fb.set("/sensors/temp", 25.5)
 ```
+
+### 2a. 🤖 Telegram Bot (`lib/telegram/`)
+
+| Module | Import Path | Class | Transport | Async |
+|--------|------------|-------|-----------|-------|
+| Telegram | `telegram.telegram_bot` | `TelegramBot`, `MessageContext` | HTTPS (Bot API) | ✅/❌ |
+
+**โต้ตอบ 2 ทาง**: ส่งข้อความ/รูป/ไฟล์/edit/keyboard + รับข้อความ/commands/callback query ผ่าน `getUpdates`
+
+**2 โหมด polling**:
+| โหมด | Method | วิธี | เหมาะกับ |
+|------|--------|-----|---------|
+| sync | `loop()` | long-poll `timeout=25` | สคริปต์ bot ตัวเดียว |
+| async | `run()` | short-poll `timeout=0` ทุก 1.5-2s | หลาย bot / งาน async พร้อมกัน |
+
+```python
+from telegram.telegram_bot import TelegramBot
+
+bot = TelegramBot(token="123456:ABC...", poll_mode="async",
+                  allowed_chat_ids=[123456789])
+bot.on_command("/status", lambda ctx: ctx.reply("ONLINE"))
+bot.on_callback_query(lambda ctx: ctx.answer_callback("กดแล้ว!"))
+
+# sync
+bot.loop()
+# หรือ async (รันคู่กับงานอื่นได้)
+import asyncio
+asyncio.create_task(bot.run())
+```
+
+**หลาย bot**: สร้าง instance แยก (token/offset/handlers เป็นอิสระ) → `asyncio.create_task(botN.run())`
+⚠️ RAM: S2 ควร limit 1-2 bot, C3/C6 รัน 2 ตัวสบาย
 
 ### 3. 🌡️ Sensors (20 drivers)
 
@@ -654,6 +690,7 @@ asyncio.run(main())
 | หมวดหมู่ | จำนวน | ประเภท |
 |----------|-------|--------|
 | Network/Comm | 8 | WiFi, BLE, MQTT, HTTP Client/Server, WebSocket, CAN, Ethernet |
+| Telegram | 1 | Telegram Bot (2 ทาง: send + receive, commands, inline keyboard) |
 | Cloud | 5 | ThingsBoard, Adafruit IO, Blynk, Firebase, AWS IoT |
 | Sensors | 20 | DHT, BMP280, DS18B20, MPU6050, HC-SR04, ADS1115, MAX30102, LDR, Soil, PIR, RCWL0516, MQ Gas, INA219, OH49E, PZEM004T v1/v2, PZEM004T v3, PMS7003, PMS5003, GPS NMEA, Battery Monitor |
 | Display | 8 | SSD1306, ILI9341, ST7789, LCD I2C, MAX7219, E-Paper, TJC HMI, P10 LED |
@@ -666,7 +703,7 @@ asyncio.run(main())
 | I/O Interface | 9 | I2C, SPI, UART, ADC, DAC, PWM, Digital I/O, Timer, I/O Expander |
 | Crypto | 1 | Hash + SSL Helpers |
 | Audio | 1 | I2S Audio |
-| **รวม** | **~88** | |
+| **รวม** | **~89** | |
 
 ---
 
